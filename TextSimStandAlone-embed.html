@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Read the Texts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { width:720px; height:450px; overflow:hidden; }
+    body {
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(160deg,#fce4f0 0%,#ede0ff 100%);
+    }
+
+    /* ─── SCREENS ─── */
+    .screen { display:none; width:720px; height:450px; }
+    .screen.active { display:flex; }
+
+    /* ─── INTRO ─── */
+    #intro-screen { align-items:center; justify-content:center; padding:16px; }
+    .intro-card {
+      background:white; border-radius:24px; padding:24px 28px;
+      box-shadow:0 10px 40px rgba(196,77,255,0.15);
+      display:flex; gap:26px; align-items:center; max-width:680px;
+    }
+    .intro-left { flex:1; text-align:center; }
+    .intro-card .big-emoji { font-size:46px; display:block; margin-bottom:8px; animation:float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .intro-card h1 { font-size:1.5rem; font-weight:900; color:#1a1a2e; margin-bottom:8px; letter-spacing:-0.5px; }
+    .intro-card p { color:#666; line-height:1.55; font-size:0.8rem; margin-bottom:14px; }
+    .how-it-works {
+      background:linear-gradient(135deg,#fce4f0,#ede0ff);
+      border-radius:16px; padding:16px 18px; text-align:left; width:300px; flex-shrink:0;
+    }
+    .how-it-works h3 { font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:2px; color:#c44dff; margin-bottom:10px; }
+    .step { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; font-size:0.76rem; color:#555; line-height:1.4; }
+    .step-num { background:linear-gradient(135deg,#ff6b9d,#c44dff); color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; flex-shrink:0; margin-top:1px; }
+    .scoring-info { font-size:0.7rem; color:#999; margin-top:12px; line-height:1.45; }
+    .btn-primary {
+      background:linear-gradient(135deg,#ff6b9d,#c44dff); color:white;
+      font-family:'Poppins',sans-serif; font-size:0.95rem; font-weight:700;
+      padding:13px 36px; border-radius:50px; border:none; cursor:pointer;
+      transition:transform 0.2s, opacity 0.2s; box-shadow:0 8px 24px rgba(196,77,255,0.35);
+    }
+    .btn-primary:hover { transform:scale(1.04); opacity:0.92; }
+
+    /* ─── GAME SCREEN ─── */
+    #game-screen { flex-direction:column; padding:7px 10px 9px; }
+
+    .top-strip { display:flex; align-items:center; justify-content:center; gap:12px; height:20px; margin-bottom:5px; }
+    .person-dots { display:flex; gap:7px; }
+    .person-dot {
+      width:10px; height:10px; border-radius:50%; background:#e0d0f5;
+      transition:background 0.3s, transform 0.3s;
+    }
+    .person-dot.done { background:linear-gradient(135deg,#ff6b9d,#c44dff); }
+    .person-dot.active { background:linear-gradient(135deg,#ff9f43,#ff6b9d); transform:scale(1.3); }
+    .game-subtitle { font-size:0.75rem; color:#8a7a9e; font-weight:600; }
+
+    /* Landscape Phone Frame */
+    .phone-frame {
+      flex:1; min-height:0;
+      background:#1c1c1e;
+      border-radius:34px;
+      padding:9px 11px 9px 22px;
+      box-shadow:0 16px 50px rgba(0,0,0,0.28), inset 0 0 0 2px rgba(255,255,255,0.08);
+      position:relative; display:flex;
+    }
+    .phone-notch-side {
+      position:absolute; left:8px; top:50%; transform:translateY(-50%);
+      width:6px; height:76px; background:#333; border-radius:3px;
+    }
+    .phone-cam { position:absolute; left:6px; top:calc(50% + 52px); width:9px; height:9px; background:#2a2a2c; border:1px solid #444; border-radius:50%; }
+    .phone-screen { flex:1; background:#f2f2f7; border-radius:24px; overflow:hidden; display:flex; flex-direction:column; position:relative; }
+
+    /* Contact header */
+    .contact-header {
+      background:rgba(242,242,247,0.95);
+      padding:8px 14px;
+      display:flex; align-items:center; gap:9px;
+      border-bottom:1px solid rgba(0,0,0,0.06); flex-shrink:0;
+    }
+    .contact-avatar {
+      width:32px; height:32px; border-radius:50%;
+      background:linear-gradient(135deg,#ff6b9d,#c44dff);
+      display:flex; align-items:center; justify-content:center;
+      font-size:16px; flex-shrink:0;
+    }
+    .contact-info { flex:1; min-width:0; }
+    .contact-name { font-size:0.85rem; font-weight:700; color:#1a1a2e; }
+    .contact-status { font-size:0.65rem; color:#34c759; font-weight:600; }
+    .round-badge {
+      background:linear-gradient(135deg,#c44dff,#7c3aed);
+      color:white; font-size:0.66rem; font-weight:700;
+      padding:4px 10px; border-radius:50px; flex-shrink:0;
+    }
+
+    /* Context bar */
+    .context-bar {
+      background:linear-gradient(135deg,rgba(255,107,157,0.12),rgba(196,77,255,0.12));
+      border-bottom:1px solid rgba(196,77,255,0.15);
+      padding:6px 14px; font-size:0.72rem; color:#7c3aed; font-weight:600;
+      text-align:center; flex-shrink:0;
+    }
+
+    /* Game body — two columns */
+    .game-body { flex:1; min-height:0; display:flex; }
+
+    .chat-area {
+      flex:1; min-width:0; overflow-y:auto;
+      padding:10px 12px 6px; display:flex; flex-direction:column; gap:7px;
+      scroll-behavior:smooth;
+    }
+    .chat-area::-webkit-scrollbar { width:4px; }
+    .chat-area::-webkit-scrollbar-thumb { background:#ddd; border-radius:2px; }
+
+    .msg { display:flex; flex-direction:column; max-width:82%; animation:msgIn 0.3s ease; }
+    @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+    .msg.theirs { align-self:flex-start; }
+    .msg.mine { align-self:flex-end; }
+    .bubble {
+      padding:8px 12px; border-radius:16px; font-size:0.8rem; line-height:1.4;
+      font-family:'Poppins',sans-serif; word-break:break-word;
+    }
+    .msg.theirs .bubble { background:white; color:#1a1a2e; border-bottom-left-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+    .msg.mine .bubble { background:linear-gradient(135deg,#c44dff,#7c3aed); color:white; border-bottom-right-radius:4px; }
+    .msg-time { font-size:0.6rem; color:#aaa; margin-top:2px; }
+    .msg.mine .msg-time { text-align:right; }
+
+    .typing-indicator {
+      display:flex; align-items:center; gap:4px; padding:9px 13px;
+      background:white; border-radius:16px; border-bottom-left-radius:4px;
+      width:fit-content; box-shadow:0 1px 4px rgba(0,0,0,0.07);
+    }
+    .typing-dot {
+      width:6px; height:6px; background:#bbb; border-radius:50%;
+      animation:typingBounce 1.4s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay:0.2s; }
+    .typing-dot:nth-child(3) { animation-delay:0.4s; }
+    @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+    /* Reply area — right column */
+    .reply-area {
+      width:260px; flex-shrink:0; overflow-y:auto;
+      padding:9px 11px; border-left:1px solid rgba(0,0,0,0.07); background:#ececf2;
+      display:flex; flex-direction:column;
+    }
+    .reply-area::-webkit-scrollbar { width:4px; }
+    .reply-area::-webkit-scrollbar-thumb { background:#ccc; border-radius:2px; }
+    .reply-prompt { font-size:0.66rem; color:#999; font-weight:700; text-align:center; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; }
+    .reply-buttons { display:flex; flex-direction:column; gap:7px; }
+    .reply-btn {
+      background:white; border:2px solid #e8d8ff; color:#1a1a2e;
+      font-family:'Poppins',sans-serif; font-size:0.78rem; font-weight:600;
+      padding:9px 12px; border-radius:13px; cursor:pointer; text-align:left;
+      transition:all 0.18s; line-height:1.35;
+    }
+    .reply-btn:hover:not(:disabled) { border-color:#c44dff; background:#faf5ff; color:#c44dff; transform:translateX(2px); }
+    .reply-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .reply-btn.selected { background:linear-gradient(135deg,#c44dff,#7c3aed); color:white; border-color:transparent; }
+
+    /* ─── GUESS PANEL (overlay inside phone screen) ─── */
+    #guess-panel {
+      display:none; position:absolute; inset:0; z-index:10;
+      background:rgba(242,242,247,0.97); backdrop-filter:blur(3px);
+      overflow-y:auto; padding:16px 20px;
+    }
+    #guess-panel::-webkit-scrollbar { width:4px; }
+    #guess-panel::-webkit-scrollbar-thumb { background:#ccc; border-radius:2px; }
+    .guess-card { max-width:520px; margin:0 auto; }
+    .guess-card h3 { font-size:1rem; font-weight:800; color:#1a1a2e; margin-bottom:2px; }
+    .guess-card .sub { font-size:0.75rem; color:#999; margin-bottom:12px; }
+    .guess-label { font-size:0.68rem; font-weight:700; color:#c44dff; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:7px; }
+
+    .confidence-row { display:flex; gap:7px; margin-bottom:14px; }
+    .conf-btn {
+      flex:1; padding:8px 6px; border-radius:11px; border:2px solid #e0d0f5;
+      font-family:'Poppins',sans-serif; font-size:0.72rem; font-weight:700; cursor:pointer;
+      transition:all 0.18s; background:white; color:#888; text-align:center;
+    }
+    .conf-btn:hover { border-color:#c44dff; color:#c44dff; background:#faf5ff; }
+    .conf-btn.active { background:linear-gradient(135deg,#ff9f43,#ff6b9d); border-color:transparent; color:white; }
+
+    .style-guess-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+    .style-guess-btn {
+      padding:10px 8px; border-radius:13px; border:2px solid #e0d0f5;
+      font-family:'Poppins',sans-serif; font-size:0.8rem; font-weight:700; cursor:pointer;
+      transition:all 0.2s; background:white; color:#444; text-align:center; line-height:1.2;
+    }
+    .style-guess-btn:hover { transform:scale(1.03); box-shadow:0 4px 14px rgba(196,77,255,0.15); }
+    .style-guess-btn.selected { box-shadow:0 4px 18px rgba(196,77,255,0.25); transform:scale(1.03); }
+    .style-guess-btn[data-style="secure"].selected { background:#f0fff7; border-color:#6ee7b7; color:#047857; }
+    .style-guess-btn[data-style="preoccupied"].selected { background:#fff7ed; border-color:#fdba74; color:#c2410c; }
+    .style-guess-btn[data-style="dismissing"].selected { background:#eff6ff; border-color:#93c5fd; color:#1d4ed8; }
+    .style-guess-btn[data-style="disorganized"].selected { background:#fdf2f8; border-color:#f9a8d4; color:#9d174d; }
+
+    .btn-submit-guess {
+      width:100%; background:linear-gradient(135deg,#ff6b9d,#c44dff); color:white;
+      font-family:'Poppins',sans-serif; font-size:0.9rem; font-weight:700; padding:12px;
+      border-radius:13px; border:none; cursor:pointer; transition:transform 0.2s, opacity 0.2s;
+    }
+    .btn-submit-guess:hover:not(:disabled) { transform:scale(1.02); opacity:0.92; }
+    .btn-submit-guess:disabled { opacity:0.4; cursor:not-allowed; }
+
+    /* ─── DEBRIEF OVERLAY ─── */
+    #debrief-overlay {
+      display:none; position:absolute; inset:0; background:rgba(26,26,46,0.7);
+      backdrop-filter:blur(4px); z-index:999; padding:12px;
+      align-items:center; justify-content:center;
+    }
+    #debrief-overlay.show { display:flex; }
+    .debrief-card {
+      background:white; border-radius:22px; padding:20px 24px; max-width:560px; width:100%;
+      max-height:426px; overflow-y:auto;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);
+      animation:slideUp 0.4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .debrief-card::-webkit-scrollbar { width:5px; }
+    .debrief-card::-webkit-scrollbar-thumb { background:#ddd; border-radius:3px; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
+    .debrief-result {
+      text-align:center; margin-bottom:14px; padding:12px 16px; border-radius:16px;
+    }
+    .debrief-result.correct { background:#f0fff7; }
+    .debrief-result.incorrect { background:#fff5f5; }
+    .result-icon { font-size:34px; display:block; margin-bottom:4px; }
+    .result-text { font-size:1.05rem; font-weight:800; }
+    .result-text.correct { color:#047857; }
+    .result-text.incorrect { color:#dc2626; }
+    .result-sub { font-size:0.8rem; color:#666; margin-top:3px; line-height:1.4; }
+    .debrief-section { margin-bottom:14px; }
+    .debrief-section h4 { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:#c44dff; margin-bottom:8px; }
+    .cue-item { display:flex; align-items:flex-start; gap:9px; margin-bottom:7px; font-size:0.8rem; color:#444; line-height:1.4; }
+    .cue-dot { width:7px; height:7px; background:linear-gradient(135deg,#ff6b9d,#c44dff); border-radius:50%; margin-top:5px; flex-shrink:0; }
+    .why-box { background:#faf5ff; border-left:4px solid #c44dff; border-radius:0 10px 10px 0; padding:11px 14px; font-size:0.8rem; color:#444; line-height:1.5; }
+    .score-earned { text-align:center; font-size:0.8rem; color:#888; margin-top:2px; }
+    .score-earned strong { color:#ff6b9d; font-size:0.9rem; }
+    .btn-next { width:100%; background:linear-gradient(135deg,#ff6b9d,#c44dff); color:white; font-family:'Poppins',sans-serif; font-size:0.9rem; font-weight:700; padding:12px; border-radius:13px; border:none; cursor:pointer; margin-top:12px; transition:transform 0.2s, opacity 0.2s; }
+    .btn-next:hover { transform:scale(1.02); opacity:0.92; }
+
+    /* ─── SCORE SCREEN ─── */
+    #score-screen { align-items:center; justify-content:center; padding:16px; }
+    .score-card {
+      background:white; border-radius:24px; padding:24px 28px;
+      box-shadow:0 12px 50px rgba(196,77,255,0.15);
+      display:flex; gap:28px; align-items:center; max-width:680px; width:100%;
+    }
+    .score-left { text-align:center; flex-shrink:0; width:230px; }
+    .score-card .trophy { font-size:48px; display:block; margin-bottom:6px; }
+    .score-card h2 { font-size:1.35rem; font-weight:900; color:#1a1a2e; margin-bottom:2px; letter-spacing:-0.5px; }
+    .score-display { font-size:2.8rem; font-weight:900; background:linear-gradient(135deg,#ff6b9d,#c44dff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin:6px 0; line-height:1; }
+    .score-label { font-size:0.78rem; color:#999; margin-bottom:14px; }
+    .conf-summary { background:linear-gradient(135deg,#fce4f0,#ede0ff); border-radius:14px; padding:12px 16px; }
+    .conf-summary .cs-label { font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:2px; color:#c44dff; margin-bottom:4px; }
+    .conf-summary .cs-val { font-size:1.5rem; font-weight:900; color:#7c3aed; }
+    .conf-summary .cs-val span { font-size:0.8rem; font-weight:600; color:#888; }
+    .conf-summary .cs-desc { font-size:0.75rem; color:#666; margin-top:1px; }
+    .score-right { flex:1; min-width:0; }
+    .results-breakdown { text-align:left; }
+    .result-row { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-radius:12px; margin-bottom:8px; }
+    .result-row.correct-row { background:#f0fff7; }
+    .result-row.incorrect-row { background:#fff5f5; }
+    .result-row-left { display:flex; align-items:center; gap:9px; }
+    .result-row-avatar { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#ff6b9d,#c44dff); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+    .result-row-name { font-size:0.82rem; font-weight:700; color:#1a1a2e; }
+    .result-row-style { font-size:0.68rem; color:#888; }
+    .result-row-badge { font-size:0.72rem; font-weight:700; padding:3px 9px; border-radius:50px; flex-shrink:0; }
+    .badge-correct { background:#dcfce7; color:#047857; }
+    .badge-incorrect { background:#fee2e2; color:#dc2626; }
+    .btn-play-again { width:100%; background:linear-gradient(135deg,#ff6b9d,#c44dff); color:white; font-family:'Poppins',sans-serif; font-size:0.85rem; font-weight:700; padding:12px; border-radius:13px; border:none; cursor:pointer; margin-top:6px; transition:transform 0.2s, opacity 0.2s; }
+    .btn-play-again:hover { transform:scale(1.02); opacity:0.92; }
+  </style>
+</head>
+<body>
+
+<!-- ── INTRO ── -->
+<div id="intro-screen" class="screen active">
+  <div class="intro-card">
+    <div class="intro-left">
+      <span class="big-emoji">💬</span>
+      <h1>Read the Texts</h1>
+      <p>You'll text back and forth with 3 people. Each has a hidden attachment style — <strong>secure, preoccupied, dismissing,</strong> or <strong>disorganized</strong> — that reveals itself through the conversation.</p>
+      <button class="btn-primary" onclick="startGame()">Let's Play →</button>
+    </div>
+    <div class="how-it-works">
+      <h3>How it works</h3>
+      <div class="step"><span class="step-num">1</span><span>Read their messages and pick one of 3 replies. Your choice shapes how they respond.</span></div>
+      <div class="step"><span class="step-num">2</span><span>Go back and forth 5 times, watching their patterns and tone.</span></div>
+      <div class="step"><span class="step-num">3</span><span>Rate your confidence, then guess their attachment style. A debrief reveals the key clues.</span></div>
+      <div class="scoring-info">🏆 1 point per correct style, out of 3. Confidence ratings are averaged in your final report.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GAME ── -->
+<div id="game-screen" class="screen">
+  <div class="top-strip">
+    <div class="person-dots">
+      <div class="person-dot" id="dot-0"></div>
+      <div class="person-dot" id="dot-1"></div>
+      <div class="person-dot" id="dot-2"></div>
+    </div>
+    <div class="game-subtitle" id="game-subtitle">Person 1 of 3</div>
+  </div>
+
+  <div class="phone-frame">
+    <div class="phone-notch-side"></div>
+    <div class="phone-cam"></div>
+    <div class="phone-screen">
+      <div class="contact-header">
+        <div class="contact-avatar" id="contact-avatar">😊</div>
+        <div class="contact-info">
+          <div class="contact-name" id="contact-name">—</div>
+          <div class="contact-status">● Active now</div>
+        </div>
+        <div class="round-badge" id="round-badge">Round 1/5</div>
+      </div>
+      <div class="context-bar" id="context-bar">📍 Loading...</div>
+      <div class="game-body">
+        <div class="chat-area" id="chat-area"></div>
+        <div class="reply-area" id="reply-area">
+          <div class="reply-prompt">Choose your reply</div>
+          <div class="reply-buttons" id="reply-buttons"></div>
+        </div>
+      </div>
+
+      <div id="guess-panel">
+        <div class="guess-card">
+          <h3>🔍 Who was that?</h3>
+          <p class="sub">Based on the conversation, what's their attachment style?</p>
+          <div class="guess-label">Your Confidence</div>
+          <div class="confidence-row">
+            <button class="conf-btn" data-conf="1" onclick="selectConf(1)">🤷 Not Sure</button>
+            <button class="conf-btn" data-conf="2" onclick="selectConf(2)">🙂 Pretty Sure</button>
+            <button class="conf-btn" data-conf="3" onclick="selectConf(3)">😤 Very Sure</button>
+          </div>
+          <div class="guess-label">Their Style</div>
+          <div class="style-guess-grid">
+            <button class="style-guess-btn" data-style="secure" onclick="selectStyle('secure')">🟢 Secure</button>
+            <button class="style-guess-btn" data-style="preoccupied" onclick="selectStyle('preoccupied')">🟠 Preoccupied</button>
+            <button class="style-guess-btn" data-style="dismissing" onclick="selectStyle('dismissing')">🔵 Dismissing</button>
+            <button class="style-guess-btn" data-style="disorganized" onclick="selectStyle('disorganized')">🔴 Disorganized</button>
+          </div>
+          <button class="btn-submit-guess" id="submitGuessBtn" onclick="submitGuess()" disabled>Submit My Guess →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DEBRIEF ── -->
+  <div id="debrief-overlay">
+    <div class="debrief-card">
+      <div class="debrief-result" id="debrief-result-box">
+        <span class="result-icon" id="debrief-icon">✅</span>
+        <div class="result-text" id="debrief-result-text">Correct!</div>
+        <div class="result-sub" id="debrief-result-sub"></div>
+      </div>
+      <div class="score-earned" id="score-earned-text"></div>
+
+      <div class="debrief-section" style="margin-top:14px;">
+        <h4>🔍 Key Behavioral Cues</h4>
+        <div id="debrief-cues"></div>
+      </div>
+      <div class="debrief-section">
+        <h4>💡 Why this style?</h4>
+        <div class="why-box" id="debrief-why"></div>
+      </div>
+      <button class="btn-next" id="debrief-next-btn">Next Person →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCORE SCREEN ── -->
+<div id="score-screen" class="screen">
+  <div class="score-card">
+    <div class="score-left">
+      <span class="trophy" id="trophy-emoji">🎉</span>
+      <h2 id="score-headline">Game Over!</h2>
+      <div class="score-display" id="final-score-display">0</div>
+      <div class="score-label" id="score-label-text">styles correctly identified</div>
+      <div class="conf-summary">
+        <div class="cs-label">Avg Confidence</div>
+        <div class="cs-val" id="avg-conf-val">0 <span>/ 3</span></div>
+        <div class="cs-desc" id="avg-conf-desc"></div>
+      </div>
+    </div>
+    <div class="score-right">
+      <div class="results-breakdown" id="results-breakdown"></div>
+      <button class="btn-play-again" onclick="resetGame()">↩ Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+//  SCENARIO DATA
+// ──────────────────────────────────────────────
+const SCENARIOS = {
+  secure: [
+    {
+      name:"Alex", avatar:"😊", context:"You've been dating for 6 weeks 💕",
+      rounds:[
+        { tMsg:"hey! hope ur day was good 😊",
+          replies:["it was ok! how was urs? 😊","pretty good lol why?","ugh kinda rough ngl 😮‍💨"],
+          tResponses:["mine was solid! wanna catch up later? 🙂","just checking in on u 😊 everything ok?","aw what happened? 🥺 wanna talk?"] },
+        { tMsg:"btw r we still on for saturday? 🗓️",
+          replies:["yes!! can't wait 🥹","idk maybe, not sure yet","can we actually reschedule?"],
+          tResponses:["same!! gonna be so fun 🎉","totally fine! just let me know 😊","of course! no stress at all 🙂"] },
+        { tMsg:"hey can i be real with u for a sec",
+          replies:["of course! what's up?","uh sure...?","depends lol what is it"],
+          tResponses:["i'm rly enjoying getting to know u 😊","nothing bad!! just wanted to say i like this","lol fair 😄 i just rly like spending time w u"] },
+        { tMsg:"what r u looking for rn tbh 🙂",
+          replies:["honestly something real 🥹","idk still figuring it out","why do u ask? 👀"],
+          tResponses:["same honestly. just wanted to be upfront 😊","totally fair! no pressure at all 🙂","just like to know where someone's at! no stress"] },
+        { tMsg:"glad we can just be real w each other 💙",
+          replies:["me too fr! 🥹","yeah same, it's refreshing","it's pretty rare tbh"],
+          tResponses:["right?? makes everything easier 😊","i think it just makes things better for us both","i think so too 🙂 hope it stays this way"] }
+      ],
+      debrief:{ style:"secure",
+        cues:["Checked in warmly but with zero pressure or urgency 😊","Took the schedule change gracefully — no guilt or passive aggression","Shared feelings directly and clearly, no fear of rejection"],
+        why:"Secure attachment means you can express care without needing a certain response. Notice how Alex calibrated to your energy — warm when you were warm, understanding when you pulled back — without withdrawing or clinging. That responsiveness without reactivity is the clearest marker."
+      }
+    },
+    {
+      name:"Jamie", avatar:"🧡", context:"Your close friend of 2 years 🧡",
+      rounds:[
+        { tMsg:"hey u free tonight? need to vent 😅",
+          replies:["yes!! what happened??","kinda busy tonight 😬","maybe? what's going on?"],
+          tResponses:["ok so my boss said the WILDEST thing lol 😭","all good! can we catch up tomorrow? 🙂","nothing huge, just need to process something"] },
+        { tMsg:"also how r u doing?? genuinely 👀",
+          replies:["honestly struggling a bit ngl","i'm good! what about u?","eh fine i guess 🤷"],
+          tResponses:["wait tell me more, what's going on? 💙","i'm good! just been busy 😊 glad ur good tho","that sounds like a mood. u sure tho?"] },
+        { tMsg:"u know ur one of my fave people right 🥹",
+          replies:["omg same that's so sweet 🥺","lol where did that come from","aww ur mine too 💙"],
+          tResponses:["just felt like saying it! life is short 😄","idk just thinking about it 😊 glad we're friends","💙💙 ok i'll let u get back to ur day"] },
+        { tMsg:"ok real talk i'm stressed about grad apps 😩",
+          replies:["omg tell me everything","that sounds overwhelming 😬","i'm here, what's going on?"],
+          tResponses:["ok so i have NO idea what i'm doing lmao 😭","yeah it's a lot. but talking about it helps tbh","ok so [proceeds to spiral for 10 mins lol] 😭"] },
+        { tMsg:"thanks for listening btw. genuinely helped 💙",
+          replies:["of course!! anytime 💙","that's what i'm here for!","glad it helped 🥹"],
+          tResponses:["i know and i appreciate it sm 🥹 ur a good friend","same back to u always! 💙","💙 ok now i'm emotional. talk later?"] }
+      ],
+      debrief:{ style:"secure",
+        cues:["Needed to vent but STILL checked on you first — not self-absorbed","Backed off gracefully when you said you were busy","Expressed affection spontaneously and didn't need it returned to feel ok"],
+        why:"Secure people can ask for support AND offer it in the same breath. Jamie didn't spiral when you were unavailable — they just adjusted and came back. The unprompted 'how are YOU?' mid-vent is a dead giveaway: secure people stay curious about others even when they need something."
+      }
+    },
+    {
+      name:"Jordan", avatar:"💞", context:"You've been dating for 4 months 💞",
+      rounds:[
+        { tMsg:"hey, can we talk about last night? 🙂",
+          replies:["yeah of course, what's up?","ugh do we have to lol","um sure... i'm a lil nervous tho"],
+          tResponses:["nothing bad! just felt a lil disconnected","i promise it's not scary 😊 just wanna check in","not scary at all! just wanna be on same page 🙂"] },
+        { tMsg:"i felt off but i think i was just tired honestly",
+          replies:["yeah same, we're probably fine!","i noticed that too honestly","ok good bc i was lowkey worried"],
+          tResponses:["good 😊 i just like us being able to talk openly","yeah! good to just name it right? 😊","u don't need to worry 💙 i just like checking in"] },
+        { tMsg:"thanks for always being willing to talk btw 🙏",
+          replies:["of course! same to u 💙","yeah communication is big for me","aw ofc 🥹"],
+          tResponses:["same fr. i appreciate that about us 💙","fr it makes everything easier 😊","💙 ok i'm being sappy but it's true"] },
+        { tMsg:"can i tell u something slightly serious",
+          replies:["of course, what's up?","uh sure 👀","yeah! i'm listening"],
+          tResponses:["i think i'm catching feelings 🙂 just wanted to say it","nothing scary! just... i rly like where this is going","i just wanted to be honest w u 😊 i like u"] },
+        { tMsg:"i know that might be a lot but i mean it 💙",
+          replies:["it's not too much! i feel it too","i appreciate ur honesty sm","that actually means a lot 🥹"],
+          tResponses:["ok good 😊 i just believe in saying things when i feel them","of course! i'd rather be real w u than not 💙","good 🙂 i didn't want to sit on it forever"] }
+      ],
+      debrief:{ style:"secure",
+        cues:["Initiated a check-in directly and calmly — no passive aggression or blaming","Owned their part ('I think I was just tired') instead of making it your fault","Expressed appreciation for honest communication openly"],
+        why:"Secure partners can name a rupture without weaponizing it. Jordan didn't wait, stew, or escalate — they just asked. Notice also how they reassured you when you seemed nervous, and took responsibility for their own mood. That self-awareness + care for your comfort is quintessentially secure."
+      }
+    }
+  ],
+
+  preoccupied: [
+    {
+      name:"Riley", avatar:"💗", context:"You've been dating for 3 months 💕",
+      rounds:[
+        { tMsg:"hey!! haven't heard from u today 🥺",
+          replies:["sorry been super busy!","oh sorry! everything ok?","yeah just had a lot going on"],
+          tResponses:["omg ok i thought u were mad at me 😅","yeah just missed u! r we ok?? 🥺","ok just checking 😅 u still thinking about me?"] },
+        { tMsg:"btw i sent u like 3 msgs earlier lol 👀",
+          replies:["lol yes i saw them! just busy","wait did u?? let me check","sorry been off my phone all day"],
+          tResponses:["ok ok sorry i just panic when u go quiet 😬","yeah i just panic when i don't hear back 😅","ok phew! i was like... did something happen??"] },
+        { tMsg:"sometimes i feel like i care more than u do 😔",
+          replies:["that's not true at all!","why do u feel that way?","idk what makes u say that"],
+          tResponses:["ok good bc i need to know we're ok 🥺","idk i just overthink everything 😔","like u take forever to reply and i spiral 😔"] },
+        { tMsg:"do u think about our future together? 🥺",
+          replies:["yeah sometimes! do u?","it's a lil early for that tbh","what kind of future?"],
+          tResponses:["literally all the time 😭 is that too much? be honest","i know i know... r u even in this tho? 🥺","like long term... do u even see this going somewhere 🥺"] },
+        { tMsg:"sometimes i just need to hear ur not leaving 😔",
+          replies:["i'm not going anywhere!","why do u feel like i would?","that sounds really hard tbh"],
+          tResponses:["ok thank u 🥺 i just spiral. i'm working on it","idk i just get scared 😔 past stuff. sry","yeah 😔 i know it's a lot. do u still like me when i'm like this"] }
+      ],
+      debrief:{ style:"preoccupied",
+        cues:["Sent multiple messages without waiting for a reply — classic monitoring behavior","Immediately interpreted silence as potential rejection ('I thought u were mad')","Asked directly 'r we ok??' — seeking explicit reassurance even when unprompted"],
+        why:"Preoccupied attachment is driven by a hyperactivated threat-detection system around relationships. The absence of a text doesn't feel neutral — it feels like evidence of rejection. The '3 messages' and 'do you still think about me?' aren't pushiness, they're anxiety in action. The nervous system learned early that love requires constant monitoring to maintain."
+      }
+    },
+    {
+      name:"Casey", avatar:"💘", context:"You've been seeing each other for 5 weeks 💗",
+      rounds:[
+        { tMsg:"good morning!! thought about u all night 🥰🥰",
+          replies:["aw good morning! 😊","haha u did?? that's sweet","morning! how are u?"],
+          tResponses:["i was counting down to texting u 😭💕","YES literally ur all i think about rn 😭","good!! better now 🥰 r u excited to see me?"] },
+        { tMsg:"wait r u going out tonight?? with who 👀",
+          replies:["yeah just with some friends!","why? is that ok?","just some classmates, why?"],
+          tResponses:["ok but will u text me? i get anxious when ur out 😬","yes!! i just like knowing ur safe 😅","ok just checking 😅 text when ur back?"] },
+        { tMsg:"be honest do u like me as much as i like u 🥺",
+          replies:["yes i rly do!","why do u keep asking that?","of course! why?"],
+          tResponses:["good bc i get scared u'll leave 😔","bc i can't always tell and i spiral 😭","i just need a lot of reassurance i think 😅"] },
+        { tMsg:"i checked ur story and u posted but didn't text 👀",
+          replies:["lol i was gonna reply!","ok that's a lil much 😅","sorry!! i got distracted"],
+          tResponses:["ok sry 😅 my brain just goes there sometimes","i know i know 😔 i just get in my head","ok phew 😮‍💨 i hate that i do this. am i too much?"] },
+        { tMsg:"r u sure u like me and i'm not imagining it 🥺",
+          replies:["yes!! i promise lol","why do u keep doubting this?","of course i do! what's making u feel that way?"],
+          tResponses:["ok good 🥺 i just need to hear it sometimes. is that ok?","i know i'm sry 😔 it's like a reflex. i rly like u tho","idk just anxiety i think 😅 i like u a lot and it scares me"] }
+      ],
+      debrief:{ style:"preoccupied",
+        cues:["'Thought about you ALL night' in week 5 — intensity disproportionate to relationship stage","Showed anxiety about you going out without them, wanting location updates","Asked directly for a reassurance comparison: 'do you like me AS MUCH as I like you?'"],
+        why:"Preoccupied individuals often move fast emotionally and feel the relationship gap acutely when their partner isn't as intensely focused. The 'going out' anxiety isn't about trust exactly — it's about what might happen when you're not thinking about them. Asking for a 'like-for-like' emotional comparison is textbook anxiety: seeking data to quiet the alarm."
+      }
+    },
+    {
+      name:"Morgan", avatar:"🌷", context:"Your friend of 1 year 💗",
+      rounds:[
+        { tMsg:"hey can i be honest about something",
+          replies:["yeah of course!","um sure, what's up?","uh oh what happened lol"],
+          tResponses:["i feel like ur distant lately 😔 did i do smth?","feel like u've been pulling away 😔","lol but like... do u still wanna be friends?"] },
+        { tMsg:"bc u barely texted back twice this week",
+          replies:["sorry i've just been swamped!","i didn't realize that bothered u","i respond when i can, that's just life"],
+          tResponses:["ok but do u still think about me? 😔","it does tho 😔 i need to feel like i matter","i know but i spiral when i don't hear back 🥺"] },
+        { tMsg:"sometimes i wonder if we're even close 😔",
+          replies:["of course we are! why would u doubt that?","that's kinda hurtful tbh","what would make u feel more sure?"],
+          tResponses:["bc i care SO much and it feels one-sided 😭","i know sry 😔 i just need a lot of reassurance","idk maybe just... initiate more? i feel needy 😔"] },
+        { tMsg:"i wrote u a whole paragraph and deleted it 😅",
+          replies:["lol why?? send it!","what was it about?","aww send it if u want to"],
+          tResponses:["bc it was too much probably 😅 just... i care about u a lot","just how much i value u and fear losing u as a friend","idk maybe later. is it weird i get this in my head?"] },
+        { tMsg:"do u think i'm too intense sometimes 😔",
+          replies:["not at all! ur just passionate","i mean sometimes u can be a lot 😅","what makes u ask that?"],
+          tResponses:["ok good bc i care SO much and it feels like too much even to me","i know 😔 i'm working on it. i just feel things rly deeply","idk i worry i push people away by caring too much 😔"] }
+      ],
+      debrief:{ style:"preoccupied",
+        cues:["Put the friendship 'on trial' based on texting frequency alone","Framed normal busyness as potential abandonment ('do you still want to be friends?')","Admitted 'I feel needy' — preoccupied people often have limited self-soothing resources"],
+        why:"Preoccupied attachment in friendships looks the same as in romance: the relationship requires constant maintenance signals to feel safe. Two unanswered texts become evidence of rejection. The open admission of neediness at the end is actually a healthy sign of self-awareness — many preoccupied people eventually see their patterns, even if they struggle to shift them."
+      }
+    }
+  ],
+
+  dismissing: [
+    {
+      name:"Drew", avatar:"🧢", context:"You've been dating for 2 months 💙",
+      rounds:[
+        { tMsg:"hey wyd tonight",
+          replies:["just chilling, u?","nothing much! wanna hang?","watching tv, what's up?"],
+          tResponses:["same. wanna come over or whatever","sure. 8?","kk. bring snacks or something"] },
+        { tMsg:"btw r u good? u seemed kinda off lately",
+          replies:["i'm fine! why do u ask?","honestly not totally fine ngl","just stressed about school stuff"],
+          tResponses:["ok cool. did u see the game last night tho","nah i'm fine. anyway what r u watching rn","mhm. anyway what time r u coming over"] },
+        { tMsg:"i feel like we never rly talk about deep stuff",
+          replies:["yeah i've noticed that too","what do u mean?","is that something u want?"],
+          tResponses:["i mean we talk plenty lol. what's on ur mind","we talk lol. what do u want to talk about","i'm not rly a feelings person. i show up tho"] },
+        { tMsg:"my friend asked if we're official lol",
+          replies:["haha what did u say?","what do u want to say?","lol what do u think?"],
+          tResponses:["idk said we're chilling. why does it need a label","i mean. does it matter what we call it","idk. labels r weird to me. we just hang"] },
+        { tMsg:"ok fine but do u even like me or nah lol",
+          replies:["lol of course i do","why do u ask that?","i mean yeah, why?"],
+          tResponses:["yeah obviously lol. anyway u eating dinner?","i mean i'm here aren't i. that should say enough","yeah. i don't rly say that stuff but yeah. food?"] }
+      ],
+      debrief:{ style:"dismissing",
+        cues:["Opened with a bare 'hey wyd' — no warmth, no context, straight to logistics","Changed the subject immediately every time emotions were introduced","Responded to 'we never talk deeply' with 'we talk plenty lol' — deflection with reframing"],
+        why:"Dismissing attachment isn't coldness — it's a learned strategy for keeping emotional distance while staying connected. Drew shows up (wants to hang out) but deflects vulnerability the moment it appears. The subject-changes aren't cruel; they're reflexive. The nervous system learned that emotional expression wasn't safe or useful, so it stopped."
+      }
+    },
+    {
+      name:"Blake", avatar:"🤙", context:"Your friend of 3 years 🤙",
+      rounds:[
+        { tMsg:"yo what r u up to this weekend",
+          replies:["nothing much, u?","probably just studying 😩","free saturday! wanna hang?"],
+          tResponses:["same. gym maybe. wanna link sat?","lol same. link and complain about it?","yeah. food?"] },
+        { tMsg:"hey can i ask u something kinda personal",
+          replies:["yeah ofc go for it","uh depends lol","sure what's up"],
+          tResponses:["do u get lonely lol. anyway nvm forget it 😅","lol nvm it's weird. wanna get food instead","actually nah. how's that class going tho"] },
+        { tMsg:"u know u can talk to me if smth's going on right",
+          replies:["i appreciate that fr","is something going on WITH u?","thanks i'm good tho"],
+          tResponses:["good. not big on talking tbh. u need a ride?","nah i'm straight lol. what's up w u","i know. i'm good. wanna just watch something"] },
+        { tMsg:"hey did i do something to make u pull back lately",
+          replies:["no! what makes u say that?","idk i've just been busy","i haven't been pulling back??"],
+          tResponses:["ok cool. just checking. wanna grab food this week","ok. same. wanna grab food","ok. anyway food this week?"] },
+        { tMsg:"u know i'd tell u if something was wrong right",
+          replies:["i hope so! u can always talk to me","i mean... would u tho?","yeah i know 🙂"],
+          tResponses:["yeah. i would. probably. let's eat","maybe lol. anyway where u tryna go","yeah. ok. chipotle?"] }
+      ],
+      debrief:{ style:"dismissing",
+        cues:["Started to reveal something vulnerable ('do you get lonely?') then immediately retracted it","Redirected every emotional opening back to logistics or activities","Responded to an offer of care with 'not big on talking tbh'"],
+        why:"'Do you get lonely lol. anyway nvm forget it' is one of the most clinically rich texts in this exercise. That's a dismissing person touching their own emotional need and immediately self-editing. The 'lol' is doing heavy lifting — it softens the vulnerability before it lands. Dismissing people often have genuine emotional needs but have learned to dismiss them before they can be dismissed by others."
+      }
+    },
+    {
+      name:"Taylor", avatar:"🏔️", context:"You've been dating for 4 months 💙",
+      rounds:[
+        { tMsg:"hey how was ur day",
+          replies:["it was really good actually!","rough ngl, stressed about stuff","fine, how was urs?"],
+          tResponses:["nice. dinner tonight?","that sucks. eat yet?","fine. u hungry?"] },
+        { tMsg:"do u ever think about like... us?",
+          replies:["yeah actually, do u?","sometimes! what made u ask?","i mean kind of? why?"],
+          tResponses:["i mean we're good lol. don't overthink it","idk just wondering. things r fine. dessert?","things r fine lol. why do we need to analyze it"] },
+        { tMsg:"i feel like i don't really know what ur feeling",
+          replies:["fair, i can try to be more open","what do u wanna know?","i don't always know either tbh"],
+          tResponses:["i mean i'm here aren't i. that's how i show it","i'm fine lol. i'm not complicated","yeah. i just don't do the feelings talk thing"] },
+        { tMsg:"not trying to be harsh but like... do u actually care about this",
+          replies:["yes, of course i do","define 'care' lol","that's kind of a loaded question"],
+          tResponses:["ok. yeah. i do. i'm just not expressive","i care. i just don't make it a whole thing","i care. i just show it differently than u want me to"] },
+        { tMsg:"ok i'm just gonna say it — sometimes i feel like i'm the only one putting in effort",
+          replies:["that's not fair, i show up too","i hear that. what would feel different?","i don't know what more u want from me"],
+          tResponses:["i come every time. that IS effort","i don't do it the way u want but i do it","i'm not gonna perform emotions i don't have"] }
+      ],
+      debrief:{ style:"dismissing",
+        cues:["Responded to 'how was your day' with a single word and an immediate redirect to food","Answered 'do you ever think about us?' with 'we're good, don't overthink it' — shut down the question","'I'm here aren't I' — presence as substitute for emotional expression"],
+        why:"Dismissing partners often show love through actions (showing up, making plans, being reliable) rather than words or emotional openness. Taylor's 'I'm here aren't I' is actually a genuine statement of care — they just can't access a more vulnerable form of it. The frustration for partners is that presence without emotional attunement can feel lonely, even when the person is technically 'there.'"
+      }
+    }
+  ],
+
+  disorganized: [
+    {
+      name:"Avery", avatar:"💜", context:"You've been dating for 2 months 💜",
+      rounds:[
+        { tMsg:"hey i miss u so much 😭💕",
+          replies:["aw i miss u too!!","that's so sweet 🥺","good! wanna hang soon?"],
+          tResponses:["ok but like... don't get too attached lol","sorry nm forget i said that 😅","idk maybe. actually i need some space rn"] },
+        { tMsg:"wait no i didn't mean that. come over pls",
+          replies:["ok! what time?","wait... r u ok?","lol i'm confused but ok?"],
+          tResponses:["nvm i'm being weird. text u later 😔","idk i do this thing where i push people away 😔","sorry i don't know what i want rn 😔"] },
+        { tMsg:"do u ever feel like u ruin good things",
+          replies:["not rly, why do u ask?","sometimes yeah... u ok?","where is this coming from?"],
+          tResponses:["bc i do 😔 i rly like u and that scares me","idk. things r good and i still sabotage it 😔","when i get close i panic and push away. sry 😔"] },
+        { tMsg:"u know what let's just hang out and be normal i'll be fine 🙂",
+          replies:["ok! sounds good 🙂","are u sure tho?","love that energy lol"],
+          tResponses:["ok wait actually can u just... be patient w me 🥺","i say that every time and then i spiral 😔","yeah. i'm fine. sorry for being a lot 😔"] },
+        { tMsg:"i think what i need is for u to not give up on me even when i'm weird",
+          replies:["i'm not going anywhere 💙","of course, that's what i'm here for","i'll try my best 🤍"],
+          tResponses:["ok good bc i'm gonna test that probably 😔","thank u. sry in advance lol 😔","i want to get better at this. i promise i'm trying 😔"] }
+      ],
+      debrief:{ style:"disorganized",
+        cues:["Said 'I miss you SO much' then immediately said 'don't get too attached' — within seconds","Flip-flopped between wanting closeness and needing space in back-to-back messages","Showed self-awareness: 'I do this thing where I push people away'"],
+        why:"Disorganized attachment is often described as wanting the fire but being afraid of getting burned. Avery's push-pull happened within the same conversation — not days apart. This isn't manipulation; it's a conflict between a genuine desire for closeness and a nervous system that has learned closeness means danger. The self-awareness at the end ('I ruin good things') is common in disorganized individuals — they often SEE the pattern without yet being able to stop it."
+      }
+    },
+    {
+      name:"Quinn", avatar:"🌀", context:"You've been talking for 3 weeks 💜",
+      rounds:[
+        { tMsg:"ur literally my fave person rn no cap 😭",
+          replies:["omg same that's so sweet!","haha that's rly nice 🥺","aww ur mine too!!"],
+          tResponses:["lol nvm forget i said that. idk why 😅","ok wait nvm i'm being weird ignore me 😅","ok wait i take it back that was too much lol"] },
+        { tMsg:"but like... we're not a 'thing' thing right",
+          replies:["i mean... i'm open to it?","what do u want?","i thought we were vibing?"],
+          tResponses:["idk i want to but also kinda don't lol","idk 😔 i want closeness but then i freak out","we are!! but like closeness freaks me out 😅"] },
+        { tMsg:"i don't want u to leave but i push u away 😔",
+          replies:["that sounds really hard tbh","i'm not going anywhere!","yeah i've noticed that..."],
+          tResponses:["yeah idk i'm working on it. i do rly like u tho","i know and it makes me panic MORE lol 😔","sorry 😔 i don't do it on purpose. i get scared"] },
+        { tMsg:"like i literally fantasize about texting u all day and then when u text i go quiet lol",
+          replies:["that's so real but also confusing ngl","why do u think that happens?","haha honestly same energy sometimes 😅"],
+          tResponses:["bc wanting something feels safer than having it i think 😔","idk my brain is broken 😔 i rly do like u tho","yeah. closeness feels scary when it's real 😔"] },
+        { tMsg:"ok i know i'm a lot. u don't have to stay if u don't want to",
+          replies:["i want to stay, i promise","that's not how this works lol","what would make u believe that?"],
+          tResponses:["ok good. i'll try not to push u away but no promises 😔","ok 😔 i'm still scared but okay. thank u","i'm scared u mean it until u don't 😔 but i'll try"] }
+      ],
+      debrief:{ style:"disorganized",
+        cues:["Called you their 'fave person' then immediately retracted the whole statement","Said 'I want to but I also don't' — the disorganized dilemma stated explicitly","Named the core conflict directly: 'I don't want you to leave but I push you away'"],
+        why:"Quinn actually articulated the disorganized dilemma more clearly than most people ever do. That statement — 'I don't want you to leave but I push you away' — is almost a textbook definition of fearful-avoidant (disorganized) attachment. The panic that increases BECAUSE someone says they're staying ('it makes me panic more') reveals that the threat isn't really about this person — it's about what closeness itself has historically meant."
+      }
+    },
+    {
+      name:"Peyton", avatar:"🪐", context:"Your friend of 6 months 💜",
+      rounds:[
+        { tMsg:"can i tell u something kinda deep",
+          replies:["yes of course 💙","always, what's up?","sure! i'm here"],
+          tResponses:["nvm it's too much. how was ur day","ok i rly value u. ok nvm 😅","it's fine forget i said anything lol"] },
+        { tMsg:"i don't usually let people in but i did w u",
+          replies:["that means a lot, rly 💙","i'm glad u trust me!","i feel the same way tbh"],
+          tResponses:["ok don't make it weird 😅 but also thank u","ok but now i'm scared lol. i do this thing","cool. anyway. how's class going"] },
+        { tMsg:"i think i'm gonna pull back a lil. not bc of u",
+          replies:["is everything ok?","wait did i do something?","ok... can u talk to me about it?"],
+          tResponses:["i get scared when things feel good. that's all 😔","it's me i promise. closeness overwhelms me 😔","i care about u and that makes me wanna run 😔"] },
+        { tMsg:"ok wait i'm back. i overthought it and i missed u",
+          replies:["lol i'm still here 😊","ok... that was a lot ngl","i appreciate u coming back 💙"],
+          tResponses:["yeah i do this. i'm sorry. it's not fair to u 😔","i know. my brain goes to worst case. i'm working on it 😔","thank u for not giving up on me when i get like that 😔"] },
+        { tMsg:"can we just like... go slow? like ACTUALLY slow",
+          replies:["yes absolutely, whatever u need","of course, we can set whatever pace feels right","yes. i'll follow ur lead 💙"],
+          tResponses:["thank u. i just need to know i can trust this 😔","and if i freak out again just... stay. if u can 😔","ok. i think i can do this if we're slow. thank u 💙😔"] }
+      ],
+      debrief:{ style:"disorganized",
+        cues:["Opened with 'let me tell you something deep' then immediately backed out — multiple times","Shared real vulnerability ('I let you in'), then immediately deflected ('anyway, how's class?')","Announced a preemptive withdrawal — not because of anything wrong, but because of closeness itself"],
+        why:"Peyton's pattern is approach-then-retreat repeated across all 3 rounds. The self-edit — 'let me say something real... nvm, it's too much' — is the disorganized nervous system in action: desire for connection, immediately overridden by fear. The final explanation, 'I care about you and that makes me want to run,' is the disorganized experience stated plainly: intimacy and threat have become associated at a level below conscious control."
+      }
+    }
+  ]
+};
+
+// ──────────────────────────────────────────────
+//  GAME STATE
+// ──────────────────────────────────────────────
+let gameOrder = [];      // array of {style, versionIdx}
+let currentPerson = 0;  // 0, 1, 2
+let currentRound = 0;   // 0, 1, 2
+let currentScenario = null;
+let totalScore = 0;
+let results = [];
+let selectedConf = 0;
+let selectedStyle = null;
+let roundsLocked = false;
+
+function startGame() {
+  // Pick 3 unique styles, random version per style
+  const styles = shuffle(['secure','preoccupied','dismissing','disorganized']).slice(0,3);
+  gameOrder = styles.map(s => ({
+    style: s,
+    versionIdx: Math.floor(Math.random() * 3)
+  }));
+  totalScore = 0;
+  results = [];
+  currentPerson = 0;
+
+  showScreen('game-screen');
+  loadPerson(0);
+}
+
+function loadPerson(idx) {
+  currentRound = 0;
+  roundsLocked = false;
+  selectedConf = 0;
+  selectedStyle = null;
+
+  const { style, versionIdx } = gameOrder[idx];
+  currentScenario = SCENARIOS[style][versionIdx];
+
+  // Update dots
+  for (let i = 0; i < 3; i++) {
+    const d = document.getElementById(`dot-${i}`);
+    d.className = 'person-dot';
+    if (i < idx) d.classList.add('done');
+    else if (i === idx) d.classList.add('active');
+  }
+  document.getElementById('game-subtitle').textContent = `Person ${idx+1} of 3`;
+
+  // Contact info
+  document.getElementById('contact-avatar').textContent = currentScenario.avatar;
+  document.getElementById('contact-name').textContent = currentScenario.name;
+  document.getElementById('context-bar').textContent = '📍 ' + currentScenario.context;
+  document.getElementById('round-badge').textContent = 'Round 1/5';
+
+  // Clear chat
+  document.getElementById('chat-area').innerHTML = '';
+
+  // Hide guess panel
+  document.getElementById('guess-panel').style.display = 'none';
+
+  // Reset guess UI
+  document.querySelectorAll('.conf-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.style-guess-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('submitGuessBtn').disabled = true;
+
+  // Show reply area
+  document.getElementById('reply-area').style.display = 'flex';
+
+  // Begin round 0
+  setTimeout(() => beginRound(0), 300);
+}
+
+function beginRound(roundIdx) {
+  currentRound = roundIdx;
+  document.getElementById('round-badge').textContent = `Round ${roundIdx+1}/5`;
+
+  const rd = currentScenario.rounds[roundIdx];
+  showTyping(() => {
+    addMsg(rd.tMsg, 'theirs');
+    showReplies(rd.replies);
+  });
+}
+
+function showReplies(replies) {
+  const btn_area = document.getElementById('reply-buttons');
+  btn_area.innerHTML = '';
+  replies.forEach((txt, i) => {
+    const b = document.createElement('button');
+    b.className = 'reply-btn';
+    b.textContent = txt;
+    b.onclick = () => playerReply(i);
+    btn_area.appendChild(b);
+  });
+}
+
+function playerReply(idx) {
+  if (roundsLocked) return;
+  roundsLocked = true;
+
+  const rd = currentScenario.rounds[currentRound];
+  const replyText = rd.replies[idx];
+  const response = rd.tResponses[idx];
+
+  // Disable all reply buttons
+  document.querySelectorAll('.reply-btn').forEach(b => { b.disabled = true; });
+  document.querySelector(`.reply-btn:nth-child(${idx+1})`).classList.add('selected');
+
+  // Show player message
+  addMsg(replyText, 'mine');
+
+  // Show texter typing, then response
+  setTimeout(() => {
+    showTyping(() => {
+      addMsg(response, 'theirs');
+      roundsLocked = false;
+
+      if (currentRound < 4) {
+        // Next round after a pause
+        setTimeout(() => beginRound(currentRound + 1), 800);
+      } else {
+        // All 5 rounds done — show guess panel
+        setTimeout(() => {
+          document.getElementById('reply-area').style.display = 'none';
+          document.getElementById('guess-panel').style.display = 'block';
+          document.getElementById('guess-panel').scrollTop = 0;
+        }, 600);
+      }
+    });
+  }, 700);
+}
+
+function showTyping(callback) {
+  const chat = document.getElementById('chat-area');
+  const typingEl = document.createElement('div');
+  typingEl.className = 'msg theirs';
+  typingEl.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  chat.appendChild(typingEl);
+  chat.scrollTop = chat.scrollHeight;
+  setTimeout(() => {
+    chat.removeChild(typingEl);
+    callback();
+  }, 900);
+}
+
+function addMsg(text, side) {
+  const chat = document.getElementById('chat-area');
+  const now = new Date();
+  const time = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const el = document.createElement('div');
+  el.className = `msg ${side}`;
+  el.innerHTML = `<div class="bubble">${text}</div><div class="msg-time">${time}</div>`;
+  chat.appendChild(el);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// ── GUESS ──
+function selectConf(val) {
+  selectedConf = val;
+  document.querySelectorAll('.conf-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.conf) === val);
+  });
+  checkGuessReady();
+}
+
+function selectStyle(style) {
+  selectedStyle = style;
+  document.querySelectorAll('.style-guess-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.style === style);
+  });
+  checkGuessReady();
+}
+
+function checkGuessReady() {
+  document.getElementById('submitGuessBtn').disabled = !(selectedConf > 0 && selectedStyle);
+}
+
+function submitGuess() {
+  const correct = selectedStyle === gameOrder[currentPerson].style;
+  const pts = correct ? 1 : 0;
+  totalScore += pts;
+
+  const scenario = currentScenario;
+  const actualStyle = gameOrder[currentPerson].style;
+  results.push({
+    name: scenario.name,
+    avatar: scenario.avatar,
+    actualStyle,
+    guessedStyle: selectedStyle,
+    correct,
+    pts,
+    conf: selectedConf
+  });
+
+  showDebrief(correct, pts, actualStyle, scenario.debrief);
+}
+
+function showDebrief(correct, pts, actualStyle, debrief) {
+  const overlay = document.getElementById('debrief-overlay');
+  const styleNames = { secure:'Secure 🟢', preoccupied:'Preoccupied 🟠', dismissing:'Dismissing 🔵', disorganized:'Disorganized 🔴' };
+
+  document.getElementById('debrief-icon').textContent = correct ? '✅' : '❌';
+  const rt = document.getElementById('debrief-result-text');
+  rt.textContent = correct ? 'Correct!' : 'Not quite!';
+  rt.className = 'result-text ' + (correct ? 'correct' : 'incorrect');
+
+  const rb = document.getElementById('debrief-result-box');
+  rb.className = 'debrief-result ' + (correct ? 'correct' : 'incorrect');
+
+  document.getElementById('debrief-result-sub').textContent =
+    correct ? `You correctly identified ${styleNames[actualStyle]} attachment.`
+            : `This was ${styleNames[actualStyle]} attachment.`;
+
+  document.getElementById('score-earned-text').innerHTML =
+    correct ? `<strong>+1 point</strong> this round.`
+            : `<strong>0 points</strong> this round.`;
+
+  const cueDiv = document.getElementById('debrief-cues');
+  cueDiv.innerHTML = debrief.cues.map(c =>
+    `<div class="cue-item"><div class="cue-dot"></div><span>${c}</span></div>`
+  ).join('');
+
+  document.getElementById('debrief-why').textContent = debrief.why;
+
+  const isLast = currentPerson === 2;
+  const nextBtn = document.getElementById('debrief-next-btn');
+  nextBtn.textContent = isLast ? 'See My Final Score →' : 'Next Person →';
+  nextBtn.onclick = isLast ? showFinalScore : goToNextPerson;
+
+  overlay.classList.add('show');
+  overlay.querySelector('.debrief-card').scrollTop = 0;
+}
+
+function goToNextPerson() {
+  document.getElementById('debrief-overlay').classList.remove('show');
+  currentPerson++;
+  loadPerson(currentPerson);
+}
+
+function showFinalScore() {
+  document.getElementById('debrief-overlay').classList.remove('show');
+
+  const correct = results.filter(r => r.correct).length;
+  let trophy = '🌱', headline = 'Nice Try!';
+  if (correct === 3) { trophy = '🏆'; headline = 'Perfect Score!'; }
+  else if (correct === 2) { trophy = '🎉'; headline = 'Well Done!'; }
+  else if (correct === 1) { trophy = '🙌'; headline = 'Getting There!'; }
+
+  const avgConf = (results.reduce((s, r) => s + r.conf, 0) / results.length).toFixed(1);
+  const confDesc = avgConf <= 1.4 ? 'Not Sure' : avgConf <= 2.4 ? 'Pretty Sure' : 'Very Sure';
+  const confEmojis = { 1:'🤷', 2:'🙂', 3:'😤' };
+
+  document.getElementById('trophy-emoji').textContent = trophy;
+  document.getElementById('score-headline').textContent = headline;
+  document.getElementById('final-score-display').textContent = `${correct}/3`;
+  document.getElementById('score-label-text').textContent = `styles correctly identified`;
+
+  document.getElementById('avg-conf-val').innerHTML = `${avgConf} <span>/ 3</span>`;
+  document.getElementById('avg-conf-desc').textContent = `${confEmojis[Math.round(parseFloat(avgConf))]} ${confDesc}`;
+
+  const styleNames = { secure:'Secure', preoccupied:'Preoccupied', dismissing:'Dismissing', disorganized:'Disorganized' };
+  const styleEmojis = { secure:'🟢', preoccupied:'🟠', dismissing:'🔵', disorganized:'🔴' };
+
+  const bd = document.getElementById('results-breakdown');
+  bd.innerHTML = results.map(r => `
+    <div class="result-row ${r.correct?'correct-row':'incorrect-row'}">
+      <div class="result-row-left">
+        <div class="result-row-avatar">${r.avatar}</div>
+        <div>
+          <div class="result-row-name">${r.name}</div>
+          <div class="result-row-style">${styleEmojis[r.actualStyle]} ${styleNames[r.actualStyle]} · Conf: ${confEmojis[r.conf]} ${r.conf}/3</div>
+        </div>
+      </div>
+      <span class="result-row-badge ${r.correct?'badge-correct':'badge-incorrect'}">${r.correct?'✓':'✗'}</span>
+    </div>
+  `).join('');
+
+  showScreen('score-screen');
+}
+
+function resetGame() {
+  showScreen('intro-screen');
+}
+
+// ── HELPERS ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+</script>
+</body>
+</html>

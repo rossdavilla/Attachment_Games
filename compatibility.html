@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style Matcher | Attachment Styles Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:linear-gradient(160deg,#fce4f0 0%,#ede0ff 100%); min-height:100vh; }
+
+    nav {
+      background:linear-gradient(135deg,#ff6b9d,#c44dff);
+      padding:14px 32px; display:flex; align-items:center; justify-content:space-between;
+    }
+    .nav-logo { font-weight:800; font-size:1.1rem; color:white; text-decoration:none; }
+    .nav-links a {
+      color:rgba(255,255,255,0.9); font-size:0.85rem; font-weight:600; text-decoration:none;
+      padding:7px 16px; border-radius:50px; background:rgba(255,255,255,0.18); margin-left:6px; transition:background 0.2s;
+    }
+    .nav-links a:hover { background:rgba(255,255,255,0.35); }
+
+    /* ── PAGE LAYOUT ── */
+    .page-wrap { max-width:900px; margin:0 auto; padding:44px 24px 80px; }
+
+    .page-header { text-align:center; margin-bottom:40px; }
+    .page-label { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:3px; color:#c44dff; margin-bottom:8px; }
+    .page-header h1 { font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900; color:#1a1a2e; letter-spacing:-0.5px; margin-bottom:10px; }
+    .page-header p { color:#777; font-size:0.97rem; line-height:1.68; max-width:580px; margin:0 auto; }
+
+    /* ── SELECTOR AREA ── */
+    .selector-grid {
+      display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:start; margin-bottom:28px;
+    }
+    .vs-badge {
+      background:linear-gradient(135deg,#ff6b9d,#c44dff);
+      color:white; font-size:1.1rem; font-weight:900; width:48px; height:48px;
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      margin-top:48px; flex-shrink:0; box-shadow:0 6px 20px rgba(196,77,255,0.4);
+    }
+
+    .selector-card {
+      background:white; border-radius:24px; padding:24px;
+      box-shadow:0 6px 32px rgba(196,77,255,0.10);
+    }
+    .selector-card h3 { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:#c44dff; margin-bottom:14px; }
+    .style-tiles { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .style-tile-btn {
+      padding:12px 8px; border-radius:14px; border:2px solid #f0e0ff;
+      background:white; cursor:pointer; transition:all 0.18s;
+      font-family:'Poppins',sans-serif; text-align:center;
+    }
+    .style-tile-btn .tile-emoji { font-size:22px; display:block; margin-bottom:4px; }
+    .style-tile-btn .tile-name { font-size:0.78rem; font-weight:700; color:#444; }
+    .style-tile-btn:hover { border-color:#c44dff; transform:scale(1.03); }
+    .style-tile-btn.selected-secure   { background:#f0fff7; border-color:#6ee7b7; }
+    .style-tile-btn.selected-secure .tile-name { color:#047857; }
+    .style-tile-btn.selected-preoccupied { background:#fff7ed; border-color:#fdba74; }
+    .style-tile-btn.selected-preoccupied .tile-name { color:#c2410c; }
+    .style-tile-btn.selected-dismissing { background:#eff6ff; border-color:#93c5fd; }
+    .style-tile-btn.selected-dismissing .tile-name { color:#1d4ed8; }
+    .style-tile-btn.selected-disorganized { background:#fdf2f8; border-color:#f9a8d4; }
+    .style-tile-btn.selected-disorganized .tile-name { color:#9d174d; }
+
+    .selected-display {
+      margin-top:14px; min-height:36px; display:flex; align-items:center;
+      gap:8px; font-size:0.88rem; font-weight:700; color:#888;
+    }
+    .selected-display.has-selection { color:#1a1a2e; }
+    .selected-display .check { color:#c44dff; }
+
+    .btn-see-match {
+      display:block; width:100%; background:linear-gradient(135deg,#ff6b9d,#c44dff);
+      color:white; font-family:'Poppins',sans-serif; font-size:1.05rem; font-weight:700;
+      padding:18px; border-radius:18px; border:none; cursor:pointer;
+      transition:transform 0.2s, opacity 0.2s; box-shadow:0 8px 32px rgba(196,77,255,0.3);
+      margin-bottom:36px;
+    }
+    .btn-see-match:hover:not(:disabled) { transform:scale(1.02); opacity:0.92; }
+    .btn-see-match:disabled { opacity:0.38; cursor:not-allowed; box-shadow:none; }
+
+    /* ── RESULTS ── */
+    #results-area { display:none; }
+    #results-area.show { display:block; animation:fadeIn 0.5s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+    .results-headline { text-align:center; margin-bottom:28px; }
+    .results-headline .pairing-label {
+      display:inline-flex; align-items:center; gap:8px;
+      background:white; padding:10px 24px; border-radius:50px;
+      box-shadow:0 4px 20px rgba(196,77,255,0.12);
+      font-size:1rem; font-weight:700; color:#1a1a2e; margin-bottom:10px;
+    }
+    .results-headline p { font-size:0.9rem; color:#999; }
+
+    /* Panel base */
+    .panel {
+      background:white; border-radius:24px; padding:32px 36px;
+      box-shadow:0 6px 32px rgba(196,77,255,0.09); margin-bottom:24px;
+    }
+    .panel-title {
+      font-size:0.75rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:2.5px; color:#c44dff; margin-bottom:18px;
+    }
+
+    /* Compatibility meters */
+    .meters-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .meter-item { }
+    .meter-header { display:flex; justify-content:space-between; margin-bottom:8px; }
+    .meter-label { font-size:0.9rem; font-weight:700; color:#444; }
+    .meter-value { font-size:1.15rem; font-weight:900; }
+    .meter-track { background:#f0e0ff; border-radius:50px; height:14px; overflow:hidden; }
+    .meter-fill { height:100%; border-radius:50px; width:0; transition:width 1.2s cubic-bezier(.34,1.56,.64,1); }
+    .fill-satisfaction { background:linear-gradient(90deg,#6ee7b7,#34d399); }
+    .fill-conflict { background:linear-gradient(90deg,#ff6b9d,#ff4081); }
+    .meter-note { font-size:0.75rem; color:#bbb; margin-top:5px; line-height:1.4; }
+
+    /* Scenarios */
+    .scenarios-strip { display:flex; flex-direction:column; gap:14px; }
+    .scenario-card {
+      border-left:4px solid #f0e0ff; background:#faf5ff;
+      border-radius:0 16px 16px 0; padding:16px 20px;
+    }
+    .scenario-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .scenario-icon { font-size:20px; }
+    .scenario-label { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#9b59b6; }
+    .scenario-text { font-size:0.9rem; color:#444; line-height:1.68; }
+    .s-fight { border-color:#ff6b9d; background:#fff5f8; }
+    .s-fight .scenario-label { color:#e91e8c; }
+    .s-vuln { border-color:#93c5fd; background:#f0f8ff; }
+    .s-vuln .scenario-label { color:#1d4ed8; }
+    .s-stress { border-color:#fdba74; background:#fff8f0; }
+    .s-stress .scenario-label { color:#c2410c; }
+
+    /* Tension points */
+    .tension-list { display:flex; flex-direction:column; gap:12px; }
+    .tension-item { display:flex; align-items:flex-start; gap:12px; }
+    .tension-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+    .tension-text { font-size:0.9rem; color:#444; line-height:1.65; }
+
+    /* Growth pathways */
+    .growth-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .growth-col { background:#f0fff7; border-radius:16px; padding:18px 20px; border:2px solid #a7f3d0; }
+    .growth-col .growth-name { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#047857; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+    .growth-col .growth-text { font-size:0.87rem; color:#374151; line-height:1.65; }
+
+    /* Did you know */
+    .dyk-box {
+      background:linear-gradient(135deg,rgba(255,107,157,0.08),rgba(196,77,255,0.08));
+      border:2px solid rgba(196,77,255,0.2);
+      border-radius:20px; padding:24px 28px;
+    }
+    .dyk-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .dyk-header .dyk-emoji { font-size:24px; }
+    .dyk-header h4 { font-size:0.82rem; font-weight:800; text-transform:uppercase; letter-spacing:2px; color:#c44dff; }
+    .dyk-text { font-size:0.92rem; color:#444; line-height:1.72; }
+
+    .btn-reset {
+      display:block; width:100%; background:white; color:#c44dff;
+      font-family:'Poppins',sans-serif; font-size:0.97rem; font-weight:700;
+      padding:16px; border-radius:16px; border:2px solid #e8d8ff; cursor:pointer;
+      transition:all 0.2s; margin-top:8px;
+    }
+    .btn-reset:hover { background:#faf5ff; border-color:#c44dff; }
+    .back-link { display:block; text-align:center; margin-top:14px; color:#c44dff; font-weight:600; font-size:0.9rem; text-decoration:none; }
+    .back-link:hover { text-decoration:underline; }
+
+    @media(max-width:640px) {
+      .selector-grid { grid-template-columns:1fr; }
+      .vs-badge { margin:0 auto; }
+      .meters-grid { grid-template-columns:1fr; }
+      .growth-grid { grid-template-columns:1fr; }
+      .panel { padding:24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">🧠 AttachLab</a>
+  <div class="nav-links">
+    <a href="quiz.html">Quiz</a>
+    <a href="textsim.html">Text Sim</a>
+    <a href="compatibility.html">Matcher</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="page-header">
+    <p class="page-label">Activity 03</p>
+    <h1>💞 Style Matcher</h1>
+    <p>Select two attachment styles and explore how they interact — satisfaction potential, common tension points, how they handle conflict and vulnerability, and what growth looks like for each person.</p>
+  </div>
+
+  <!-- SELECTORS -->
+  <div class="selector-grid">
+    <div class="selector-card">
+      <h3>Person A</h3>
+      <div class="style-tiles" id="tiles-a"></div>
+      <div class="selected-display" id="display-a">← Choose a style</div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="selector-card">
+      <h3>Person B</h3>
+      <div class="style-tiles" id="tiles-b"></div>
+      <div class="selected-display" id="display-b">← Choose a style</div>
+    </div>
+  </div>
+
+  <button class="btn-see-match" id="matchBtn" onclick="showMatch()" disabled>
+    💞 See How They Match
+  </button>
+
+  <!-- RESULTS -->
+  <div id="results-area">
+    <div class="results-headline">
+      <div class="pairing-label">
+        <span id="rl-a-emoji">🟢</span>
+        <span id="rl-a-name">Secure</span>
+        <span style="color:#ddd;font-weight:400;">+</span>
+        <span id="rl-b-emoji">🟠</span>
+        <span id="rl-b-name">Preoccupied</span>
+      </div>
+      <p>Scroll to explore all dimensions of this pairing.</p>
+    </div>
+
+    <!-- Meters -->
+    <div class="panel">
+      <div class="panel-title">📊 Compatibility Overview</div>
+      <div class="meters-grid">
+        <div class="meter-item">
+          <div class="meter-header">
+            <span class="meter-label">💚 Satisfaction Potential</span>
+            <span class="meter-value" id="m-satisfaction" style="color:#047857">—</span>
+          </div>
+          <div class="meter-track"><div class="meter-fill fill-satisfaction" id="fill-satisfaction"></div></div>
+          <div class="meter-note">Based on published research on long-term relationship outcomes by attachment pairing.</div>
+        </div>
+        <div class="meter-item">
+          <div class="meter-header">
+            <span class="meter-label">🔥 Conflict Likelihood</span>
+            <span class="meter-value" id="m-conflict" style="color:#e91e8c">—</span>
+          </div>
+          <div class="meter-track"><div class="meter-fill fill-conflict" id="fill-conflict"></div></div>
+          <div class="meter-note">Higher conflict doesn't always mean a worse relationship — it often reflects emotional intensity.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scenarios -->
+    <div class="panel">
+      <div class="panel-title">🎬 How This Plays Out</div>
+      <div class="scenarios-strip" id="scenarios-strip"></div>
+    </div>
+
+    <!-- Tension Points -->
+    <div class="panel">
+      <div class="panel-title">⚡ Tension Points</div>
+      <div class="tension-list" id="tension-list"></div>
+    </div>
+
+    <!-- Growth -->
+    <div class="panel">
+      <div class="panel-title">🌿 Growth Pathways</div>
+      <div class="growth-grid" id="growth-grid"></div>
+    </div>
+
+    <!-- Did You Know -->
+    <div class="dyk-box" id="dyk-box">
+      <div class="dyk-header">
+        <span class="dyk-emoji">🔬</span>
+        <h4>Did You Know?</h4>
+      </div>
+      <p class="dyk-text" id="dyk-text"></p>
+    </div>
+
+    <button class="btn-reset" onclick="resetMatch()">↩ Try Another Pairing</button>
+    <a href="index.html" class="back-link">← Back to All Activities</a>
+  </div>
+
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+//  DATA
+// ──────────────────────────────────────────────
+const STYLES = [
+  { key:'secure',       emoji:'🟢', name:'Secure',       desc:'Comfortable with closeness & independence' },
+  { key:'preoccupied',  emoji:'🟠', name:'Preoccupied',  desc:'Craves closeness, fears abandonment' },
+  { key:'dismissing',   emoji:'🔵', name:'Dismissing',   desc:'Values independence, avoids intimacy' },
+  { key:'disorganized', emoji:'🔴', name:'Disorganized', desc:'Simultaneously wants & fears closeness' }
+];
+
+// Keyed by canonical (alphabetical) pair
+const COMPAT = {
+  'secure_secure': {
+    satisfaction:90, conflict:20,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'Both can name the issue without catastrophizing. Conflict typically resolves within the same conversation, with both partners willing to take responsibility and repair.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'Emotional disclosure is met with attunement and curiosity. Neither partner becomes overwhelmed or shuts down when the other shares something difficult.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'They function as a team. One may lean while the other supports, with natural role-shifting as the stressor evolves. Neither requires the other to manage their anxiety.' }
+    ],
+    tensions:[
+      'Even secure pairings face friction — differences in personality, values, or communication style still create tension.',
+      'Secure individuals may assume their partner processes things the same way they do, overlooking subtler differences in need.'
+    ],
+    growth:{ a:'Continue developing curiosity about your partner\'s unique inner world — security can sometimes lead to complacency.', b:'Security is a foundation, not a destination. Both partners can continue growing in self-awareness and emotional depth.' },
+    dyk:'Secure + Secure pairs consistently show the highest relationship satisfaction AND the lowest rates of dissolution across virtually all major attachment studies. They also tend to raise securely attached children — the effect propagates across generations.'
+  },
+
+  'preoccupied_secure': {
+    satisfaction:65, conflict:50,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'The secure partner stays calm and tries to talk it through while the preoccupied partner escalates emotionally. The secure partner\'s steadiness can eventually de-escalate things — but it can feel exhausting over time.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'The secure partner responds with warm attunement, which can be deeply healing for the preoccupied person. However, the preoccupied partner may need more reassurance than the secure partner anticipates.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'The preoccupied partner needs more check-ins than usual. The secure partner provides a stabilizing presence — but risks burning out if the dynamic becomes highly one-directional.' }
+    ],
+    tensions:[
+      'The preoccupied partner may interpret the secure partner\'s calm as indifference — "You don\'t seem to care as much as I do."',
+      'The secure partner may eventually feel drained by the asymmetry in emotional labor and the ongoing need for reassurance.'
+    ],
+    growth:{ a:'Preoccupied partner: Practice sitting with uncertainty without immediately seeking reassurance. Self-soothing skills (therapy, mindfulness) can reduce the emotional load placed on the relationship.', b:'Secure partner: Learn to verbalize warmth more explicitly and proactively. What feels adequate to you may not register as enough for an anxiously attached partner.' },
+    dyk:'Research shows that secure partners can actually move preoccupied partners toward earned security over time — through consistent, non-reactive responsiveness. This is one of the most studied pathways to developing security in adulthood.'
+  },
+
+  'dismissing_secure': {
+    satisfaction:68, conflict:38,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'The secure partner wants to talk it through; the dismissing partner wants to drop it and move on. Neither approach is wrong — but the gap can leave the secure partner feeling unheard and unresolved.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'The secure partner creates an emotional space the dismissing partner rarely experiences elsewhere. Small, tentative openings toward vulnerability can happen here — slowly, and on the dismissing partner\'s terms.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'The dismissing partner handles stress independently. The secure partner checks in without pressure. This can work well — as long as the secure partner doesn\'t read autonomy as rejection.' }
+    ],
+    tensions:[
+      'The secure partner may feel lonely or emotionally unmet — present in the relationship but not really seen.',
+      'The dismissing partner may feel crowded or "therapized" by the secure partner\'s check-ins, reflective questions, and invitations to share feelings.'
+    ],
+    growth:{ a:'Dismissing partner: In the safety of this relationship, practice tolerating emotional conversations one step at a time. The secure partner won\'t weaponize your vulnerability.', b:'Secure partner: Learn to not read your partner\'s avoidance as rejection. Avoidance is a learned survival strategy, not a statement about how much they care about you.' },
+    dyk:'This is often a more stable pairing than it looks on paper. Secure partners don\'t pathologize avoidance the way anxious partners do — which reduces the defensive escalation that typically derails dismissing individuals in relationships.'
+  },
+
+  'disorganized_secure': {
+    satisfaction:60, conflict:60,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'The disorganized partner may oscillate between fierce engagement and sudden withdrawal — even within a single argument. The secure partner\'s steadiness is genuinely helpful, but this pairing requires significant patience and a long view.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'The disorganized partner opens up, then pulls back, then feels shame for pulling back. The secure partner\'s non-reactive, consistent response to this cycle is — over time — the most healing thing they can offer.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'Disorganized partners may push the secure partner away right when they need them most. Understanding this as a protective reflex — not intentional rejection — is crucial for the secure partner\'s ability to stay present.' }
+    ],
+    tensions:[
+      'The disorganized partner\'s push-pull can be confusing and exhausting even for a secure partner who understands it intellectually.',
+      'The secure partner may be drawn to "fixing" or over-functioning for their partner — which can inadvertently create an unhealthy caretaking dynamic.'
+    ],
+    growth:{ a:'Disorganized partner: Consistent, trauma-informed therapy is the most important investment you can make — not just for this relationship, but for your relationship with yourself.', b:'Secure partner: Maintain your own needs, friendships, and emotional anchors. The most healing thing you can offer is your consistent presence — not your self-sacrifice.' },
+    dyk:'Secure attachment partners offer the closest real-world parallel to what therapists call a "corrective emotional experience." Research on earned security shows that consistent, responsive relationships in adulthood can literally change the neural patterns associated with early relational trauma.'
+  },
+
+  'preoccupied_preoccupied': {
+    satisfaction:48, conflict:78,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'Both escalate; neither de-escalates. The argument often becomes about the relationship itself — "you don\'t care enough" met with "you always do this." Repair tends to come eventually, but through exhaustion rather than genuine resolution.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'Deeply emotional and often profound. Two preoccupied people can create intense intimacy — but it can tip into enmeshment, where each person\'s anxiety amplifies the other\'s rather than soothing it.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'Both seek reassurance simultaneously — from each other. Neither has the regulated capacity to provide what the other needs right now. External support (friends, therapist) becomes critical.' }
+    ],
+    tensions:[
+      'Both partners need reassurance that neither can consistently provide — creating a "reassurance loop" that never fully satisfies either person.',
+      'Without external support systems, the relationship can become each other\'s entire emotional world — which increases the stakes of every conflict exponentially.'
+    ],
+    growth:{ a:'Both partners: Developing individual self-soothing skills is the most important shared goal. Each person needs to manage their anxiety independently before they can co-regulate effectively.', b:'Both partners: Build robust support networks outside the relationship. When two preoccupied partners are each other\'s only safe base, the relationship bears more weight than it can sustainably carry.' },
+    dyk:'Despite being high in conflict, two preoccupied partners often form genuinely deep emotional bonds and report high levels of passionate love — especially early on. The challenge isn\'t connection; it\'s sustainability without developing self-regulation tools.'
+  },
+
+  'dismissing_preoccupied': {
+    satisfaction:44, conflict:88,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'The preoccupied partner pursues; the dismissing partner withdraws. The more the dismissing partner retreats, the more anxious the preoccupied partner becomes — triggering more withdrawal. This pursue-withdraw cycle can run indefinitely.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'The preoccupied partner opens up intensely; the dismissing partner changes the subject or minimizes. The preoccupied partner feels invisible. The dismissing partner feels ambushed and over-pressured.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'The preoccupied partner reaches for the dismissing partner; the dismissing partner pulls inward to cope alone. Both experience the other as doing exactly the wrong thing at the worst possible time.' }
+    ],
+    tensions:[
+      'The anxious-avoidant trap: each person\'s coping strategy directly activates the other\'s core fear. Avoidance increases preoccupied anxiety; anxious pursuit increases avoidant withdrawal.',
+      'This is a self-reinforcing cycle — the harder each person tries to get their need met, the more they inadvertently prevent the other from meeting theirs.'
+    ],
+    growth:{ a:'Preoccupied partner: Learn to recognize when you\'re pursuing from anxiety versus genuine need. Slowing down — going first — is what breaks the cycle.', b:'Dismissing partner: Learn to recognize that your withdrawal is experienced as rejection, regardless of your intent. Small gestures of engagement can interrupt the pursue-withdraw spiral.' },
+    dyk:'This is the most well-studied pairing in adult attachment research — and also one of the most common. Anxious and avoidant individuals are often intensely attracted to each other initially. EFT (Emotionally Focused Therapy) was largely developed to address this specific dynamic.'
+  },
+
+  'disorganized_preoccupied': {
+    satisfaction:40, conflict:86,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'The preoccupied partner pursues; the disorganized partner oscillates between fierce engagement and sudden shutdown. Neither knows what to expect next, keeping both nervous systems chronically activated.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'Can be intense and deeply connecting in good moments. But the disorganized partner\'s withdrawal after intimacy repeatedly reactivates the preoccupied partner\'s abandonment fear — creating a painful cycle.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'Both are dysregulated; neither has the resources to stabilize the other. The relationship can feel like trying to hold on while both are drowning. External support becomes essential, not optional.' }
+    ],
+    tensions:[
+      'The disorganized partner\'s unpredictability — warm one moment, withdrawn the next — is the most potent possible trigger for a preoccupied person\'s abandonment fears.',
+      'Both partners are activated simultaneously, and neither has the regulated internal state needed to co-regulate the other.'
+    ],
+    growth:{ a:'Both partners: Individual therapy — preferably attachment-focused — is strongly recommended before attempting deep relational repair work together.', b:'Preoccupied partner: The disorganized partner\'s withdrawals are about their own internal conflict, not your worth. This is extremely hard to hold emotionally — but it\'s important and true.' },
+    dyk:'The preoccupied partner often interprets the disorganized partner\'s "hot and cold" behavior as evidence of hidden deep feelings — creating a dynamic that feels intoxicating before it becomes exhausting. Research on relationship churning (repeated breakups and reunions) frequently involves this pairing.'
+  },
+
+  'dismissing_dismissing': {
+    satisfaction:55, conflict:28,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'Both minimize and move on quickly — often without full resolution. The relationship stays calm on the surface, but unaddressed issues accumulate over time beneath it.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'Rarely initiated by either partner. If vulnerability does surface, it tends to be practical in tone ("I\'m stressed about work") rather than deeply emotional. Both partners often appreciate this register.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'Both handle it independently, functioning in parallel rather than as a team. If the stressor requires emotional support, both may feel somewhat lost — neither is practiced at asking for or offering it.' }
+    ],
+    tensions:[
+      'Emotional distance can feel comfortable to both partners while simultaneously creating a quiet loneliness that neither knows how to name or address.',
+      'Without language for emotional processing, unresolved conflicts don\'t get repaired — they get buried. These accumulate over time.'
+    ],
+    growth:{ a:'Both partners: Practice naming one feeling per day — not to process it deeply, but to build emotional vocabulary. Joint experiences (films, travel, shared challenges) create natural emotional context.', b:'Both partners: Consider what intimacy could look like if it felt safe. You don\'t need to become emotionally expressive — but expanding the window slightly can meaningfully deepen connection.' },
+    dyk:'Two dismissing partners often report higher relationship satisfaction than outside observers expect. They\'ve established a mutual equilibrium that works for them — even if it lacks depth. The risk is that this equilibrium can feel increasingly lonely as the relationship matures and deeper connection is desired.'
+  },
+
+  'disorganized_dismissing': {
+    satisfaction:42, conflict:70,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'The disorganized partner erupts or collapses; the dismissing partner shuts down. Neither is equipped to repair well. Arguments end through exhaustion or distance, not resolution.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'The disorganized partner reaches for depth; the dismissing partner deflects. Being met with emotional unavailability in that moment reactivates the disorganized partner\'s deepest fears about what closeness means.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'The disorganized partner may push for connection exactly as the dismissing partner retreats inward. Both experience the other as doing the wrong thing. Neither\'s nervous system gets what it needs.' }
+    ],
+    tensions:[
+      'The dismissing partner\'s emotional unavailability confirms the disorganized partner\'s core belief: that closeness ultimately leads to abandonment or harm.',
+      'The disorganized partner\'s emotional intensity is genuinely overwhelming for the dismissing partner, who reads it as pressure and retreats further — creating a painful loop.'
+    ],
+    growth:{ a:'Dismissing partner: Your withdrawal in emotional moments is not neutral — it is experienced as abandonment, even if that\'s not your intent. Learning to stay present (not fix, just stay) is transformative.', b:'Disorganized partner: The dismissing partner\'s avoidance is not a verdict on your worth. Therapy can help separate the present moment from past relational injuries that it echoes.' },
+    dyk:'This pairing often features long stretches of apparent calm followed by intense ruptures. The calm periods aren\'t emotional resolution — they\'re emotional suppression. Unaddressed wounds tend to surface at high-stakes moments with significant force.'
+  },
+
+  'disorganized_disorganized': {
+    satisfaction:38, conflict:90,
+    scenarios:[
+      { label:'During a fight', icon:'⚡', cls:'s-fight', text:'Both escalate; neither repairs. Without external intervention, these cycles can become harmful over time. The intensity of the connection makes the hurt equally intense when things break down.' },
+      { label:'A moment of vulnerability', icon:'💙', cls:'s-vuln', text:'In genuinely good moments, this pairing can produce extraordinary depth and connection. Both partners have often been through real pain and can recognize it in each other in a way few others can.' },
+      { label:'A major life stressor', icon:'🌪️', cls:'s-stress', text:'Mutual dysregulation with no stable anchor. Both are activated; neither can hold the other steady. External support — a therapist, a trusted person — is not optional here, it\'s necessary.' }
+    ],
+    tensions:[
+      'Both partners simultaneously fear abandonment AND intimacy — every move toward closeness also feels threatening, creating perpetual relational instability.',
+      'Neither partner has a stable enough internal base to be a consistent anchor for the other. Triggers are frequent, mutual, and often unconscious.'
+    ],
+    growth:{ a:'Both partners: Individual trauma-focused therapy (EMDR, IFS, somatic approaches) is strongly recommended before attempting couples work. Each person\'s healing is the prerequisite.', b:'Both partners: The connection you feel may be genuine and real. The work is creating the internal safety that allows that connection to be sustained rather than continuously threatened.' },
+    dyk:'Despite being the most complex pairing, disorganized individuals often describe relationships with each other as simultaneously the most intensely felt and most deeply understood they\'ve experienced. The key research finding: earned security is possible for everyone — and it most often develops through a combination of therapy and at least one consistently safe, long-term relationship.'
+  }
+};
+
+// ──────────────────────────────────────────────
+//  STATE & UI
+// ──────────────────────────────────────────────
+let selectedA = null, selectedB = null;
+
+function buildTiles(slot) {
+  const container = document.getElementById(`tiles-${slot}`);
+  container.innerHTML = '';
+  STYLES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'style-tile-btn';
+    btn.dataset.style = s.key;
+    btn.innerHTML = `<span class="tile-emoji">${s.emoji}</span><span class="tile-name">${s.name}</span>`;
+    btn.onclick = () => selectStyle(slot, s.key);
+    container.appendChild(btn);
+  });
+}
+
+function selectStyle(slot, styleKey) {
+  if (slot === 'a') selectedA = styleKey;
+  else selectedB = styleKey;
+
+  const s = STYLES.find(x => x.key === styleKey);
+  const display = document.getElementById(`display-${slot}`);
+  display.innerHTML = `<span class="check">✓</span> ${s.emoji} ${s.name}`;
+  display.classList.add('has-selection');
+
+  // Update tile states
+  document.querySelectorAll(`#tiles-${slot} .style-tile-btn`).forEach(b => {
+    b.className = 'style-tile-btn';
+    if (b.dataset.style === styleKey) b.classList.add(`selected-${styleKey}`);
+  });
+
+  document.getElementById('matchBtn').disabled = !(selectedA && selectedB);
+
+  // If results were showing, hide them
+  document.getElementById('results-area').classList.remove('show');
+}
+
+function getCanonicalKey(a, b) {
+  const order = ['dismissing','disorganized','preoccupied','secure'];
+  const sorted = [a, b].sort((x, y) => order.indexOf(x) - order.indexOf(y));
+  return sorted.join('_');
+}
+
+function showMatch() {
+  if (!selectedA || !selectedB) return;
+  const key = getCanonicalKey(selectedA, selectedB);
+  const data = COMPAT[key];
+  if (!data) return;
+
+  const sA = STYLES.find(x => x.key === selectedA);
+  const sB = STYLES.find(x => x.key === selectedB);
+
+  // Headline
+  document.getElementById('rl-a-emoji').textContent = sA.emoji;
+  document.getElementById('rl-a-name').textContent = sA.name;
+  document.getElementById('rl-b-emoji').textContent = sB.emoji;
+  document.getElementById('rl-b-name').textContent = sB.name;
+
+  // Meters
+  document.getElementById('m-satisfaction').textContent = data.satisfaction;
+  document.getElementById('m-conflict').textContent = data.conflict;
+  document.getElementById('fill-satisfaction').style.width = '0';
+  document.getElementById('fill-conflict').style.width = '0';
+
+  // Scenarios
+  const strip = document.getElementById('scenarios-strip');
+  strip.innerHTML = data.scenarios.map(sc => `
+    <div class="scenario-card ${sc.cls}">
+      <div class="scenario-header">
+        <span class="scenario-icon">${sc.icon}</span>
+        <span class="scenario-label">${sc.label}</span>
+      </div>
+      <p class="scenario-text">${sc.text}</p>
+    </div>
+  `).join('');
+
+  // Tensions
+  const tensions = document.getElementById('tension-list');
+  tensions.innerHTML = data.tensions.map(t => `
+    <div class="tension-item">
+      <span class="tension-icon">⚡</span>
+      <span class="tension-text">${t}</span>
+    </div>
+  `).join('');
+
+  // Growth — label A and B with actual names
+  const growthGrid = document.getElementById('growth-grid');
+  growthGrid.innerHTML = `
+    <div class="growth-col">
+      <div class="growth-name">${sA.emoji} ${sA.name}</div>
+      <p class="growth-text">${data.growth.a}</p>
+    </div>
+    <div class="growth-col">
+      <div class="growth-name">${sB.emoji} ${sB.name}</div>
+      <p class="growth-text">${data.growth.b}</p>
+    </div>
+  `;
+
+  // DYK
+  document.getElementById('dyk-text').textContent = data.dyk;
+
+  // Show results
+  const results = document.getElementById('results-area');
+  results.classList.add('show');
+
+  // Animate meters after a frame
+  setTimeout(() => {
+    document.getElementById('fill-satisfaction').style.width = data.satisfaction + '%';
+    document.getElementById('fill-conflict').style.width = data.conflict + '%';
+  }, 200);
+
+  results.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function resetMatch() {
+  selectedA = null; selectedB = null;
+  ['a','b'].forEach(slot => {
+    document.querySelectorAll(`#tiles-${slot} .style-tile-btn`).forEach(b => b.className = 'style-tile-btn');
+    const d = document.getElementById(`display-${slot}`);
+    d.textContent = '← Choose a style';
+    d.classList.remove('has-selection');
+  });
+  document.getElementById('matchBtn').disabled = true;
+  document.getElementById('results-area').classList.remove('show');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// Init
+buildTiles('a');
+buildTiles('b');
+</script>
+</body>
+</html>

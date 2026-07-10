@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attachment Styles Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(160deg, #fce4f0 0%, #ede0ff 100%);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+    .nav-logo { font-weight: 800; font-size: 1.1rem; color: white; text-decoration: none; letter-spacing: -0.5px; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.9);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.18);
+      transition: background 0.2s;
+    }
+    .nav-links a:hover { background: rgba(255,255,255,0.35); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #ff6b9d 0%, #c44dff 55%, #7c3aed 100%);
+      padding: 70px 32px 110px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: -30%;
+      width: 160%;
+      height: 160%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.12) 0%, transparent 65%);
+      animation: heroGlow 5s ease-in-out infinite;
+    }
+    @keyframes heroGlow {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+      50% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+    }
+    .hero-emoji {
+      font-size: 64px;
+      display: block;
+      margin-bottom: 18px;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 900;
+      color: white;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.18);
+      margin-bottom: 14px;
+      letter-spacing: -1.5px;
+      position: relative;
+    }
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: rgba(255,255,255,0.92);
+      max-width: 580px;
+      margin: 0 auto 28px;
+      line-height: 1.65;
+      position: relative;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.22);
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 18px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.35);
+      letter-spacing: 0.5px;
+      position: relative;
+    }
+
+    /* ── WAVE ── */
+    .wave { margin-top: -2px; line-height: 0; }
+    .wave svg { display: block; width: 100%; }
+
+    /* ── CARDS SECTION ── */
+    .cards-section {
+      padding: 56px 24px 80px;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+    .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: #c44dff;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      color: #2d2d2d;
+      margin-bottom: 48px;
+      letter-spacing: -0.5px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 28px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 28px;
+      padding: 40px 32px 36px;
+      box-shadow: 0 8px 40px rgba(196,77,255,0.10);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: var(--card-grad);
+      border-radius: 28px 28px 0 0;
+    }
+    .card:hover {
+      transform: translateY(-10px) scale(1.01);
+      box-shadow: 0 24px 64px rgba(196,77,255,0.18);
+    }
+    .card-1 { --card-grad: linear-gradient(90deg, #ff6b9d, #ff9f43); }
+    .card-2 { --card-grad: linear-gradient(90deg, #c44dff, #ff6b9d); }
+    .card-3 { --card-grad: linear-gradient(90deg, #7c3aed, #c44dff); }
+
+    .card-icon {
+      font-size: 52px;
+      margin-bottom: 18px;
+      line-height: 1;
+    }
+    .card-number {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: #c44dff;
+      margin-bottom: 8px;
+    }
+    .card h3 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      margin-bottom: 12px;
+      line-height: 1.3;
+      letter-spacing: -0.3px;
+    }
+    .card p {
+      font-size: 0.92rem;
+      color: #666;
+      line-height: 1.68;
+      flex-grow: 1;
+      margin-bottom: 22px;
+    }
+    .card-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .tag {
+      background: #f5eeff;
+      color: #9b59b6;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 50px;
+    }
+    .card-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--card-grad);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      align-self: stretch;
+    }
+    .card-btn:hover { opacity: 0.88; transform: scale(1.02); }
+
+    /* ── ABOUT SECTION ── */
+    .about {
+      background: white;
+      padding: 72px 24px;
+    }
+    .about-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .about-inner > p {
+      color: #666;
+      line-height: 1.75;
+      font-size: 0.97rem;
+      margin-bottom: 40px;
+    }
+
+    .styles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      text-align: left;
+    }
+    .style-tile {
+      padding: 24px 22px;
+      border-radius: 20px;
+      border: 2px solid transparent;
+    }
+    .style-tile .emoji { font-size: 28px; margin-bottom: 10px; display: block; }
+    .style-tile h4 { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+    .style-tile p { font-size: 0.84rem; color: #666; line-height: 1.55; }
+
+    .tile-secure   { background: #f0fff7; border-color: #6ee7b7; }
+    .tile-secure h4 { color: #047857; }
+    .tile-preoccupied { background: #fff7ed; border-color: #fdba74; }
+    .tile-preoccupied h4 { color: #c2410c; }
+    .tile-dismissing  { background: #eff6ff; border-color: #93c5fd; }
+    .tile-dismissing h4 { color: #1d4ed8; }
+    .tile-disorganized { background: #fdf2f8; border-color: #f9a8d4; }
+    .tile-disorganized h4 { color: #9d174d; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #1a1a2e;
+      color: rgba(255,255,255,0.55);
+      text-align: center;
+      padding: 36px 24px;
+      font-size: 0.83rem;
+      line-height: 1.65;
+    }
+    footer strong { color: rgba(255,255,255,0.8); }
+    footer a { color: #c44dff; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 580px) {
+      .styles-grid { grid-template-columns: 1fr; }
+      .nav-links a { padding: 6px 10px; font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">🧠 AttachLab</a>
+  <div class="nav-links">
+    <a href="quiz.html">Quiz</a>
+    <a href="textsim.html">Text Sim</a>
+    <a href="compatibility.html">Matcher</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <span class="hero-emoji">🧠💕</span>
+  <h1>Attachment Styles Lab</h1>
+  <p>Explore how early relationship experiences shape the way you connect, communicate, and love — backed by decades of research.</p>
+  <span class="hero-badge">📚 Based on Bowlby, Ainsworth &amp; the ECR-R</span>
+</div>
+
+<div class="wave">
+  <svg viewBox="0 0 1440 90" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 45C240 90 480 0 720 45C960 90 1200 0 1440 45V90H0Z" fill="#f8f0ff"/>
+  </svg>
+</div>
+
+<section class="cards-section">
+  <p class="section-label">Three Activities</p>
+  <h2 class="section-title">Choose Where to Start</h2>
+  <div class="cards-grid">
+
+    <a href="quiz.html" class="card card-1">
+      <div class="card-icon">📊</div>
+      <div class="card-number">Activity 01</div>
+      <h3>What's Your Attachment Style?</h3>
+      <p>Take a 12-item research-based quiz and see exactly where you land on the anxiety–avoidance grid. Your results animate live onto an interactive attachment map.</p>
+      <div class="card-tags">
+        <span class="tag">ECR-12 Survey</span>
+        <span class="tag">~5 min</span>
+        <span class="tag">Self-Reflection</span>
+      </div>
+      <span class="card-btn">Take the Quiz →</span>
+    </a>
+
+    <a href="textsim.html" class="card card-2">
+      <div class="card-icon">💬</div>
+      <div class="card-number">Activity 02</div>
+      <h3>Read the Texts</h3>
+      <p>Play through 3 real-feeling text conversations and try to identify the attachment style behind the messages. The patterns are hiding in plain sight — can you spot them?</p>
+      <div class="card-tags">
+        <span class="tag">Simulation Game</span>
+        <span class="tag">~8 min</span>
+        <span class="tag">Pattern Recognition</span>
+      </div>
+      <span class="card-btn">Play Now →</span>
+    </a>
+
+    <a href="compatibility.html" class="card card-3">
+      <div class="card-icon">💞</div>
+      <div class="card-number">Activity 03</div>
+      <h3>Style Matcher</h3>
+      <p>Pick any two attachment styles and explore how they interact — tension points, growth opportunities, and what the research actually says. All 16 pairings supported.</p>
+      <div class="card-tags">
+        <span class="tag">Explorer</span>
+        <span class="tag">~3 min</span>
+        <span class="tag">Research-Based</span>
+      </div>
+      <span class="card-btn">Explore →</span>
+    </a>
+
+  </div>
+</section>
+
+<section class="about">
+  <div class="about-inner">
+    <p class="section-label">The Framework</p>
+    <h2 class="section-title">The Four Adult Attachment Styles</h2>
+    <p>Adult attachment theory — pioneered by John Bowlby and expanded by Mary Ainsworth and later researchers — describes four patterns that emerge from early caregiving experiences. These patterns shape how we seek closeness, handle conflict, and respond to vulnerability in adult relationships. Importantly, they're not fixed: attachment styles can shift with awareness, new experiences, and healthy relationships.</p>
+    <div class="styles-grid">
+      <div class="style-tile tile-secure">
+        <span class="emoji">🟢</span>
+        <h4>Secure</h4>
+        <p>Comfortable with both closeness and independence. Trusts others, communicates needs directly, and handles conflict constructively without fear of abandonment.</p>
+      </div>
+      <div class="style-tile tile-preoccupied">
+        <span class="emoji">🟠</span>
+        <h4>Preoccupied</h4>
+        <p>High anxiety, low avoidance. Craves intimacy but fears rejection. May come across as clingy, emotionally intense, or in need of frequent reassurance.</p>
+      </div>
+      <div class="style-tile tile-dismissing">
+        <span class="emoji">🔵</span>
+        <h4>Dismissing</h4>
+        <p>Low anxiety, high avoidance. Deeply values self-sufficiency and may feel uncomfortable with emotional intimacy. Can come across as distant or emotionally unavailable.</p>
+      </div>
+      <div class="style-tile tile-disorganized">
+        <span class="emoji">🔴</span>
+        <h4>Disorganized</h4>
+        <p>High anxiety AND high avoidance. Simultaneously wants and fears closeness. May display confusing, contradictory behavior — craving connection but pulling away when it arrives.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Built for educational use in college-level <strong>Personal Relationships</strong> courses.</p>
+  <p style="margin-top:8px;">Quiz items adapted from the <strong>ECR-R</strong> (Fraley, Waller &amp; Brennan, 2000). Short form based on <strong>Wei et al. (2007)</strong>.</p>
+  <p style="margin-top:8px;">This is a learning tool, not a clinical assessment. Results reflect tendencies, not fixed traits.</p>
+</footer>
+
+</body>
+</html>
