@@ -235,6 +235,9 @@
     .cue-item { display:flex; align-items:flex-start; gap:9px; margin-bottom:7px; font-size:0.8rem; color:#444; line-height:1.4; }
     .cue-dot { width:7px; height:7px; background:linear-gradient(135deg,#ff6b9d,#c44dff); border-radius:50%; margin-top:5px; flex-shrink:0; }
     .why-box { background:#faf5ff; border-left:4px solid #c44dff; border-radius:0 10px 10px 0; padding:11px 14px; font-size:0.8rem; color:#444; line-height:1.5; }
+    .example-item { margin-bottom:10px; }
+    .example-label { font-size:0.66rem; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; }
+    .example-quote { display:inline-block; background:#f1f0f6; color:#1a1a2e; border-radius:16px 16px 16px 4px; padding:9px 14px; font-size:0.85rem; line-height:1.4; max-width:100%; }
     .score-earned { text-align:center; font-size:0.8rem; color:#888; margin-top:2px; }
     .score-earned strong { color:#ff6b9d; font-size:0.9rem; }
     .btn-next { width:100%; background:linear-gradient(135deg,#ff6b9d,#c44dff); color:white; font-family:'Poppins',sans-serif; font-size:0.9rem; font-weight:700; padding:12px; border-radius:13px; border:none; cursor:pointer; margin-top:12px; transition:transform 0.2s, opacity 0.2s; }
@@ -288,8 +291,8 @@
       <h3>How it works</h3>
       <div class="step"><span class="step-num">1</span><span>Read their messages and pick one of 3 replies. Your choice shapes how they respond.</span></div>
       <div class="step"><span class="step-num">2</span><span>Go back and forth 5 times, watching their patterns and tone.</span></div>
-      <div class="step"><span class="step-num">3</span><span>Rate your confidence, then guess their attachment style. A debrief reveals the key clues.</span></div>
-      <div class="scoring-info">🏆 1 point per correct style, out of 3. Confidence ratings are averaged in your final report.</div>
+      <div class="step"><span class="step-num">3</span><span>Guess their attachment style. A debrief reveals the key clues.</span></div>
+      <div class="scoring-info">🏆 1 point per correct style, out of 3.</div>
     </div>
   </div>
 </div>
@@ -330,12 +333,6 @@
         <div class="guess-card">
           <h3>🔍 Who was that?</h3>
           <p class="sub">Based on the conversation, what's their attachment style?</p>
-          <div class="guess-label">Your Confidence</div>
-          <div class="confidence-row">
-            <button class="conf-btn" data-conf="1" onclick="selectConf(1)">🤷 Not Sure</button>
-            <button class="conf-btn" data-conf="2" onclick="selectConf(2)">🙂 Pretty Sure</button>
-            <button class="conf-btn" data-conf="3" onclick="selectConf(3)">😤 Very Sure</button>
-          </div>
           <div class="guess-label">Their Style</div>
           <div class="style-guess-grid">
             <button class="style-guess-btn" data-style="secure" onclick="selectStyle('secure')">🟢 Secure</button>
@@ -357,15 +354,9 @@
         <div class="result-text" id="debrief-result-text">Correct!</div>
         <div class="result-sub" id="debrief-result-sub"></div>
       </div>
-      <div class="score-earned" id="score-earned-text"></div>
-
       <div class="debrief-section" style="margin-top:14px;">
-        <h4>🔍 Key Behavioral Cues</h4>
-        <div id="debrief-cues"></div>
-      </div>
-      <div class="debrief-section">
-        <h4>💡 Why this style?</h4>
-        <div class="why-box" id="debrief-why"></div>
+        <h4>💬 Lines that hinted at it</h4>
+        <div id="debrief-examples"></div>
       </div>
       <button class="btn-next" id="debrief-next-btn">Next Person →</button>
     </div>
@@ -380,11 +371,6 @@
       <h2 id="score-headline">Game Over!</h2>
       <div class="score-display" id="final-score-display">0</div>
       <div class="score-label" id="score-label-text">styles correctly identified</div>
-      <div class="conf-summary">
-        <div class="cs-label">Avg Confidence</div>
-        <div class="cs-val" id="avg-conf-val">0 <span>/ 3</span></div>
-        <div class="cs-desc" id="avg-conf-desc"></div>
-      </div>
     </div>
     <div class="score-right">
       <div class="results-breakdown" id="results-breakdown"></div>
@@ -418,7 +404,7 @@ const SCENARIOS = {
           replies:["me too fr! 🥹","yeah same, it's refreshing","it's pretty rare tbh"],
           tResponses:["right?? makes everything easier 😊","i think it just makes things better for us both","i think so too 🙂 hope it stays this way"] }
       ],
-      debrief:{ style:"secure",
+      debrief:{ style:"secure", examples:[{r:3,src:'resp'},{r:4,src:'msg'}],
         cues:["Checked in warmly but with zero pressure or urgency 😊","Took the schedule change gracefully — no guilt or passive aggression","Shared feelings directly and clearly, no fear of rejection"],
         why:"Secure attachment means you can express care without needing a certain response. Notice how Alex calibrated to your energy — warm when you were warm, understanding when you pulled back — without withdrawing or clinging. That responsiveness without reactivity is the clearest marker."
       }
@@ -442,7 +428,7 @@ const SCENARIOS = {
           replies:["of course!! anytime 💙","that's what i'm here for!","glad it helped 🥹"],
           tResponses:["i know and i appreciate it sm 🥹 ur a good friend","same back to u always! 💙","💙 ok now i'm emotional. talk later?"] }
       ],
-      debrief:{ style:"secure",
+      debrief:{ style:"secure", examples:[{r:1,src:'msg'},{r:4,src:'msg'}],
         cues:["Needed to vent but STILL checked on you first — not self-absorbed","Backed off gracefully when you said you were busy","Expressed affection spontaneously and didn't need it returned to feel ok"],
         why:"Secure people can ask for support AND offer it in the same breath. Jamie didn't spiral when you were unavailable — they just adjusted and came back. The unprompted 'how are YOU?' mid-vent is a dead giveaway: secure people stay curious about others even when they need something."
       }
@@ -466,7 +452,7 @@ const SCENARIOS = {
           replies:["it's not too much! i feel it too","i appreciate ur honesty sm","that actually means a lot 🥹"],
           tResponses:["ok good 😊 i just believe in saying things when i feel them","of course! i'd rather be real w u than not 💙","good 🙂 i didn't want to sit on it forever"] }
       ],
-      debrief:{ style:"secure",
+      debrief:{ style:"secure", examples:[{r:1,src:'msg'},{r:4,src:'resp'}],
         cues:["Initiated a check-in directly and calmly — no passive aggression or blaming","Owned their part ('I think I was just tired') instead of making it your fault","Expressed appreciation for honest communication openly"],
         why:"Secure partners can name a rupture without weaponizing it. Jordan didn't wait, stew, or escalate — they just asked. Notice also how they reassured you when you seemed nervous, and took responsibility for their own mood. That self-awareness + care for your comfort is quintessentially secure."
       }
@@ -493,7 +479,7 @@ const SCENARIOS = {
           replies:["i'm not going anywhere!","why do u feel like i would?","that sounds really hard tbh"],
           tResponses:["ok thank u 🥺 i just spiral. i'm working on it","idk i just get scared 😔 past stuff. sry","yeah 😔 i know it's a lot. do u still like me when i'm like this"] }
       ],
-      debrief:{ style:"preoccupied",
+      debrief:{ style:"preoccupied", examples:[{r:1,src:'resp'},{r:4,src:'msg'}],
         cues:["Sent multiple messages without waiting for a reply — classic monitoring behavior","Immediately interpreted silence as potential rejection ('I thought u were mad')","Asked directly 'r we ok??' — seeking explicit reassurance even when unprompted"],
         why:"Preoccupied attachment is driven by a hyperactivated threat-detection system around relationships. The absence of a text doesn't feel neutral — it feels like evidence of rejection. The '3 messages' and 'do you still think about me?' aren't pushiness, they're anxiety in action. The nervous system learned early that love requires constant monitoring to maintain."
       }
@@ -517,7 +503,7 @@ const SCENARIOS = {
           replies:["yes!! i promise lol","why do u keep doubting this?","of course i do! what's making u feel that way?"],
           tResponses:["ok good 🥺 i just need to hear it sometimes. is that ok?","i know i'm sry 😔 it's like a reflex. i rly like u tho","idk just anxiety i think 😅 i like u a lot and it scares me"] }
       ],
-      debrief:{ style:"preoccupied",
+      debrief:{ style:"preoccupied", examples:[{r:2,src:'resp'},{r:3,src:'msg'}],
         cues:["'Thought about you ALL night' in week 5 — intensity disproportionate to relationship stage","Showed anxiety about you going out without them, wanting location updates","Asked directly for a reassurance comparison: 'do you like me AS MUCH as I like you?'"],
         why:"Preoccupied individuals often move fast emotionally and feel the relationship gap acutely when their partner isn't as intensely focused. The 'going out' anxiety isn't about trust exactly — it's about what might happen when you're not thinking about them. Asking for a 'like-for-like' emotional comparison is textbook anxiety: seeking data to quiet the alarm."
       }
@@ -541,7 +527,7 @@ const SCENARIOS = {
           replies:["not at all! ur just passionate","i mean sometimes u can be a lot 😅","what makes u ask that?"],
           tResponses:["ok good bc i care SO much and it feels like too much even to me","i know 😔 i'm working on it. i just feel things rly deeply","idk i worry i push people away by caring too much 😔"] }
       ],
-      debrief:{ style:"preoccupied",
+      debrief:{ style:"preoccupied", examples:[{r:2,src:'msg'},{r:4,src:'resp'}],
         cues:["Put the friendship 'on trial' based on texting frequency alone","Framed normal busyness as potential abandonment ('do you still want to be friends?')","Admitted 'I feel needy' — preoccupied people often have limited self-soothing resources"],
         why:"Preoccupied attachment in friendships looks the same as in romance: the relationship requires constant maintenance signals to feel safe. Two unanswered texts become evidence of rejection. The open admission of neediness at the end is actually a healthy sign of self-awareness — many preoccupied people eventually see their patterns, even if they struggle to shift them."
       }
@@ -568,7 +554,7 @@ const SCENARIOS = {
           replies:["lol of course i do","why do u ask that?","i mean yeah, why?"],
           tResponses:["yeah obviously lol. anyway u eating dinner?","i mean i'm here aren't i. that should say enough","yeah. i don't rly say that stuff but yeah. food?"] }
       ],
-      debrief:{ style:"dismissing",
+      debrief:{ style:"dismissing", examples:[{r:1,src:'resp'},{r:2,src:'resp'}],
         cues:["Opened with a bare 'hey wyd' — no warmth, no context, straight to logistics","Changed the subject immediately every time emotions were introduced","Responded to 'we never talk deeply' with 'we talk plenty lol' — deflection with reframing"],
         why:"Dismissing attachment isn't coldness — it's a learned strategy for keeping emotional distance while staying connected. Drew shows up (wants to hang out) but deflects vulnerability the moment it appears. The subject-changes aren't cruel; they're reflexive. The nervous system learned that emotional expression wasn't safe or useful, so it stopped."
       }
@@ -592,7 +578,7 @@ const SCENARIOS = {
           replies:["i hope so! u can always talk to me","i mean... would u tho?","yeah i know 🙂"],
           tResponses:["yeah. i would. probably. let's eat","maybe lol. anyway where u tryna go","yeah. ok. chipotle?"] }
       ],
-      debrief:{ style:"dismissing",
+      debrief:{ style:"dismissing", examples:[{r:1,src:'resp'},{r:2,src:'resp'}],
         cues:["Started to reveal something vulnerable ('do you get lonely?') then immediately retracted it","Redirected every emotional opening back to logistics or activities","Responded to an offer of care with 'not big on talking tbh'"],
         why:"'Do you get lonely lol. anyway nvm forget it' is one of the most clinically rich texts in this exercise. That's a dismissing person touching their own emotional need and immediately self-editing. The 'lol' is doing heavy lifting — it softens the vulnerability before it lands. Dismissing people often have genuine emotional needs but have learned to dismiss them before they can be dismissed by others."
       }
@@ -616,7 +602,7 @@ const SCENARIOS = {
           replies:["that's not fair, i show up too","i hear that. what would feel different?","i don't know what more u want from me"],
           tResponses:["i come every time. that IS effort","i don't do it the way u want but i do it","i'm not gonna perform emotions i don't have"] }
       ],
-      debrief:{ style:"dismissing",
+      debrief:{ style:"dismissing", examples:[{r:1,src:'resp'},{r:2,src:'resp'}],
         cues:["Responded to 'how was your day' with a single word and an immediate redirect to food","Answered 'do you ever think about us?' with 'we're good, don't overthink it' — shut down the question","'I'm here aren't I' — presence as substitute for emotional expression"],
         why:"Dismissing partners often show love through actions (showing up, making plans, being reliable) rather than words or emotional openness. Taylor's 'I'm here aren't I' is actually a genuine statement of care — they just can't access a more vulnerable form of it. The frustration for partners is that presence without emotional attunement can feel lonely, even when the person is technically 'there.'"
       }
@@ -643,7 +629,7 @@ const SCENARIOS = {
           replies:["i'm not going anywhere 💙","of course, that's what i'm here for","i'll try my best 🤍"],
           tResponses:["ok good bc i'm gonna test that probably 😔","thank u. sry in advance lol 😔","i want to get better at this. i promise i'm trying 😔"] }
       ],
-      debrief:{ style:"disorganized",
+      debrief:{ style:"disorganized", examples:[{r:0,src:'resp'},{r:1,src:'msg'}],
         cues:["Said 'I miss you SO much' then immediately said 'don't get too attached' — within seconds","Flip-flopped between wanting closeness and needing space in back-to-back messages","Showed self-awareness: 'I do this thing where I push people away'"],
         why:"Disorganized attachment is often described as wanting the fire but being afraid of getting burned. Avery's push-pull happened within the same conversation — not days apart. This isn't manipulation; it's a conflict between a genuine desire for closeness and a nervous system that has learned closeness means danger. The self-awareness at the end ('I ruin good things') is common in disorganized individuals — they often SEE the pattern without yet being able to stop it."
       }
@@ -667,7 +653,7 @@ const SCENARIOS = {
           replies:["i want to stay, i promise","that's not how this works lol","what would make u believe that?"],
           tResponses:["ok good. i'll try not to push u away but no promises 😔","ok 😔 i'm still scared but okay. thank u","i'm scared u mean it until u don't 😔 but i'll try"] }
       ],
-      debrief:{ style:"disorganized",
+      debrief:{ style:"disorganized", examples:[{r:0,src:'resp'},{r:2,src:'msg'}],
         cues:["Called you their 'fave person' then immediately retracted the whole statement","Said 'I want to but I also don't' — the disorganized dilemma stated explicitly","Named the core conflict directly: 'I don't want you to leave but I push you away'"],
         why:"Quinn actually articulated the disorganized dilemma more clearly than most people ever do. That statement — 'I don't want you to leave but I push you away' — is almost a textbook definition of fearful-avoidant (disorganized) attachment. The panic that increases BECAUSE someone says they're staying ('it makes me panic more') reveals that the threat isn't really about this person — it's about what closeness itself has historically meant."
       }
@@ -691,7 +677,7 @@ const SCENARIOS = {
           replies:["yes absolutely, whatever u need","of course, we can set whatever pace feels right","yes. i'll follow ur lead 💙"],
           tResponses:["thank u. i just need to know i can trust this 😔","and if i freak out again just... stay. if u can 😔","ok. i think i can do this if we're slow. thank u 💙😔"] }
       ],
-      debrief:{ style:"disorganized",
+      debrief:{ style:"disorganized", examples:[{r:0,src:'resp'},{r:2,src:'resp'}],
         cues:["Opened with 'let me tell you something deep' then immediately backed out — multiple times","Shared real vulnerability ('I let you in'), then immediately deflected ('anyway, how's class?')","Announced a preemptive withdrawal — not because of anything wrong, but because of closeness itself"],
         why:"Peyton's pattern is approach-then-retreat repeated across all 3 rounds. The self-edit — 'let me say something real... nvm, it's too much' — is the disorganized nervous system in action: desire for connection, immediately overridden by fear. The final explanation, 'I care about you and that makes me want to run,' is the disorganized experience stated plainly: intimacy and threat have become associated at a level below conscious control."
       }
@@ -702,19 +688,20 @@ const SCENARIOS = {
 // ──────────────────────────────────────────────
 //  GAME STATE
 // ──────────────────────────────────────────────
+const NUM_PEOPLE = 3;    // number of rounds (people) in this version
 let gameOrder = [];      // array of {style, versionIdx}
 let currentPerson = 0;  // 0, 1, 2
 let currentRound = 0;   // 0, 1, 2
 let currentScenario = null;
 let totalScore = 0;
 let results = [];
-let selectedConf = 0;
 let selectedStyle = null;
 let roundsLocked = false;
+let chosenReplies = [];   // reply index picked in each round
 
 function startGame() {
   // Pick 3 unique styles, random version per style
-  const styles = shuffle(['secure','preoccupied','dismissing','disorganized']).slice(0,3);
+  const styles = shuffle(['secure','preoccupied','dismissing','disorganized']).slice(0,NUM_PEOPLE);
   gameOrder = styles.map(s => ({
     style: s,
     versionIdx: Math.floor(Math.random() * 3)
@@ -730,20 +717,20 @@ function startGame() {
 function loadPerson(idx) {
   currentRound = 0;
   roundsLocked = false;
-  selectedConf = 0;
+  chosenReplies = [];
   selectedStyle = null;
 
   const { style, versionIdx } = gameOrder[idx];
   currentScenario = SCENARIOS[style][versionIdx];
 
   // Update dots
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < NUM_PEOPLE; i++) {
     const d = document.getElementById(`dot-${i}`);
     d.className = 'person-dot';
     if (i < idx) d.classList.add('done');
     else if (i === idx) d.classList.add('active');
   }
-  document.getElementById('game-subtitle').textContent = `Person ${idx+1} of 3`;
+  document.getElementById('game-subtitle').textContent = `Person ${idx+1} of ${NUM_PEOPLE}`;
 
   // Contact info
   document.getElementById('contact-avatar').textContent = currentScenario.avatar;
@@ -758,7 +745,6 @@ function loadPerson(idx) {
   document.getElementById('guess-panel').style.display = 'none';
 
   // Reset guess UI
-  document.querySelectorAll('.conf-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.style-guess-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('submitGuessBtn').disabled = true;
 
@@ -799,6 +785,7 @@ function playerReply(idx) {
   const rd = currentScenario.rounds[currentRound];
   const replyText = rd.replies[idx];
   const response = rd.tResponses[idx];
+  chosenReplies[currentRound] = idx;
 
   // Disable all reply buttons
   document.querySelectorAll('.reply-btn').forEach(b => { b.disabled = true; });
@@ -853,14 +840,6 @@ function addMsg(text, side) {
 }
 
 // ── GUESS ──
-function selectConf(val) {
-  selectedConf = val;
-  document.querySelectorAll('.conf-btn').forEach(b => {
-    b.classList.toggle('active', parseInt(b.dataset.conf) === val);
-  });
-  checkGuessReady();
-}
-
 function selectStyle(style) {
   selectedStyle = style;
   document.querySelectorAll('.style-guess-btn').forEach(b => {
@@ -870,7 +849,7 @@ function selectStyle(style) {
 }
 
 function checkGuessReady() {
-  document.getElementById('submitGuessBtn').disabled = !(selectedConf > 0 && selectedStyle);
+  document.getElementById('submitGuessBtn').disabled = !selectedStyle;
 }
 
 function submitGuess() {
@@ -886,8 +865,7 @@ function submitGuess() {
     actualStyle,
     guessedStyle: selectedStyle,
     correct,
-    pts,
-    conf: selectedConf
+    pts
   });
 
   showDebrief(correct, pts, actualStyle, scenario.debrief);
@@ -909,18 +887,27 @@ function showDebrief(correct, pts, actualStyle, debrief) {
     correct ? `You correctly identified ${styleNames[actualStyle]} attachment.`
             : `This was ${styleNames[actualStyle]} attachment.`;
 
-  document.getElementById('score-earned-text').innerHTML =
-    correct ? `<strong>+1 point</strong> this round.`
-            : `<strong>0 points</strong> this round.`;
+  // Quote the two lines that hinted at the style, using the exact text this student saw
+  const exDiv = document.getElementById('debrief-examples');
+  exDiv.innerHTML = '';
+  (debrief.examples || []).forEach(ex => {
+    const rd = currentScenario.rounds[ex.r];
+    const pick = chosenReplies[ex.r] ?? 0;
+    const line = ex.src === 'msg' ? rd.tMsg : rd.tResponses[pick];
+    const item = document.createElement('div');
+    item.className = 'example-item';
+    const label = document.createElement('div');
+    label.className = 'example-label';
+    label.textContent = `${currentScenario.name}, round ${ex.r + 1}`;
+    const quote = document.createElement('div');
+    quote.className = 'example-quote';
+    quote.textContent = line;
+    item.appendChild(label);
+    item.appendChild(quote);
+    exDiv.appendChild(item);
+  });
 
-  const cueDiv = document.getElementById('debrief-cues');
-  cueDiv.innerHTML = debrief.cues.map(c =>
-    `<div class="cue-item"><div class="cue-dot"></div><span>${c}</span></div>`
-  ).join('');
-
-  document.getElementById('debrief-why').textContent = debrief.why;
-
-  const isLast = currentPerson === 2;
+  const isLast = currentPerson === NUM_PEOPLE - 1;
   const nextBtn = document.getElementById('debrief-next-btn');
   nextBtn.textContent = isLast ? 'See My Final Score →' : 'Next Person →';
   nextBtn.onclick = isLast ? showFinalScore : goToNextPerson;
@@ -940,21 +927,14 @@ function showFinalScore() {
 
   const correct = results.filter(r => r.correct).length;
   let trophy = '🌱', headline = 'Nice Try!';
-  if (correct === 3) { trophy = '🏆'; headline = 'Perfect Score!'; }
-  else if (correct === 2) { trophy = '🎉'; headline = 'Well Done!'; }
-  else if (correct === 1) { trophy = '🙌'; headline = 'Getting There!'; }
-
-  const avgConf = (results.reduce((s, r) => s + r.conf, 0) / results.length).toFixed(1);
-  const confDesc = avgConf <= 1.4 ? 'Not Sure' : avgConf <= 2.4 ? 'Pretty Sure' : 'Very Sure';
-  const confEmojis = { 1:'🤷', 2:'🙂', 3:'😤' };
+  if (correct === NUM_PEOPLE) { trophy = '🏆'; headline = 'Perfect Score!'; }
+  else if (correct >= NUM_PEOPLE * 2 / 3) { trophy = '🎉'; headline = 'Well Done!'; }
+  else if (correct >= 1) { trophy = '🙌'; headline = 'Getting There!'; }
 
   document.getElementById('trophy-emoji').textContent = trophy;
   document.getElementById('score-headline').textContent = headline;
-  document.getElementById('final-score-display').textContent = `${correct}/3`;
+  document.getElementById('final-score-display').textContent = `${correct}/${NUM_PEOPLE}`;
   document.getElementById('score-label-text').textContent = `styles correctly identified`;
-
-  document.getElementById('avg-conf-val').innerHTML = `${avgConf} <span>/ 3</span>`;
-  document.getElementById('avg-conf-desc').textContent = `${confEmojis[Math.round(parseFloat(avgConf))]} ${confDesc}`;
 
   const styleNames = { secure:'Secure', preoccupied:'Preoccupied', dismissing:'Dismissing', disorganized:'Disorganized' };
   const styleEmojis = { secure:'🟢', preoccupied:'🟠', dismissing:'🔵', disorganized:'🔴' };
@@ -966,7 +946,7 @@ function showFinalScore() {
         <div class="result-row-avatar">${r.avatar}</div>
         <div>
           <div class="result-row-name">${r.name}</div>
-          <div class="result-row-style">${styleEmojis[r.actualStyle]} ${styleNames[r.actualStyle]} · Conf: ${confEmojis[r.conf]} ${r.conf}/3</div>
+          <div class="result-row-style">${styleEmojis[r.actualStyle]} ${styleNames[r.actualStyle]}</div>
         </div>
       </div>
       <span class="result-row-badge ${r.correct?'badge-correct':'badge-incorrect'}">${r.correct?'✓':'✗'}</span>
